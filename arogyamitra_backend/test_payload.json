@@ -1,0 +1,9 @@
+{
+    "healthId": "TEST_ID_123",
+    "doctorName": "Dr. Smith",
+    "date": "2023-10-27",
+    "time": "10:00 AM",
+    "facility": "Test Facility",
+    "visitType": "General",
+    "notes": "Test appointment"
+}
