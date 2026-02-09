@@ -56,4 +56,28 @@ router.get('/profile/:healthId', async (req, res) => {
   }
 });
 
+
+router.put('/profile/:healthId/emergency', async (req, res) => {
+  try {
+    const { healthId } = req.params;
+    const { emergencyNo } = req.body;
+
+    // Validate input if needed, though frontend handles basic validation
+
+    const result = await pool.query(
+      'UPDATE registrations SET emergency_no = $1 WHERE health_id = $2 RETURNING *',
+      [emergencyNo, healthId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Emergency number updated successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating emergency number' });
+  }
+});
+
 module.exports = router;

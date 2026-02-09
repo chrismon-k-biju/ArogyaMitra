@@ -906,6 +906,8 @@ class MigrantWorkerDashboard extends StatefulWidget {
 
 class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   int _selectedIndex = 0;
+  int _currentProfileTab = 0;
+  bool _isUpdatingEmergency = false;
   List<dynamic> _appointments = [];
   bool _isLoadingAppointments = true;
   Map<String, dynamic>? _profileData;
@@ -1923,6 +1925,77 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       ),
     );
   }
+  Future<void> _updateEmergencyNumber(String? number) async {
+    setState(() => _isUpdatingEmergency = true);
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/profile/${widget.healthId}/emergency'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'emergencyNo': number}),
+      );
+
+      if (response.statusCode == 200) {
+        // Update local profile data
+        setState(() {
+            if (_profileData != null) {
+                _profileData!['emergency_no'] = number;
+            }
+        });
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(number == null ? 'Emergency number removed' : 'Emergency number updated')),
+          );
+        }
+      } else {
+        throw Exception('Failed to update');
+      }
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+      }
+    } finally {
+       setState(() => _isUpdatingEmergency = false);
+    }
+  }
+
+  void _showEmergencyDialog({String? currentNumber}) {
+      final TextEditingController controller = TextEditingController(text: currentNumber);
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+            title: Text(currentNumber == null ? 'Add Emergency Number' : 'Edit Emergency Number'),
+            content: TextField(
+                controller: controller,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                    labelText: 'Emergency Contact Number',
+                    hintText: 'Enter 10-digit number',
+                    border: OutlineInputBorder(),
+                ),
+            ),
+            actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                        if (controller.text.isNotEmpty) {
+                            _updateEmergencyNumber(controller.text);
+                            Navigator.pop(ctx);
+                        }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
+                    child: const Text('Save'),
+                ),
+            ],
+        ),
+      );
+  }
+
   Widget _buildProfileContent() {
     if (_profileData == null && !_isLoadingProfile) {
        _fetchProfileDetails();
@@ -1990,7 +2063,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                       width: 100,
                       height: 100,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF00897B), // Tealish color from screenshot
+                        color: Color(0xFF00897B),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.person_outline, size: 50, color: Colors.white),
@@ -2019,29 +2092,18 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                     
                     const SizedBox(height: 24),
                     
-                    // Tabs (Visual only)
+                    // Tabs
                     Row(
                       children: [
-                        Expanded(child: _buildTabItem('Personal Info', true)),
-                        Expanded(child: _buildTabItem('Emergency', false)),
-                        Expanded(child: _buildTabItem('Health Info', false)),
+                        Expanded(child: _buildTabItem('Personal Info', 0)),
+                        Expanded(child: _buildTabItem('Emergency', 1)),
+                        Expanded(child: _buildTabItem('Health Info', 2)),
                       ],
                     ),
                     const SizedBox(height: 24),
                     
                     // Fields
-                    _buildProfileField('Full Name', _profileData!['name'] ?? '', Icons.person_outline),
-                    const SizedBox(height: 16),
-                    _buildProfileField('Phone Number', _profileData!['phone'] ?? '', Icons.phone_outlined),
-                    const SizedBox(height: 16),
-                    _buildProfileField('Age', '${_profileData!['age'] ?? ''} years', null),
-                    const SizedBox(height: 16),
-                    _buildProfileField('Gender', _profileData!['gender'] ?? '', null),
-                    const SizedBox(height: 16),
-                    _buildProfileField('State of Origin', _profileData!['state'] ?? '', Icons.location_on_outlined),
-                    const SizedBox(height: 16),
-                    // Adding Occupation as it's in the registration data
-                    _buildProfileField('Occupation', _profileData!['occupation'] ?? '', Icons.work_outline),
+                    _buildActiveTabContent(),
                     
                     const SizedBox(height: 40),
                   ],
@@ -2054,27 +2116,181 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
     );
   }
 
-  Widget _buildTabItem(String title, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isSelected ? const Color(0xFF1F6EBB) : Colors.transparent,
-            width: 2,
+  Widget _buildTabItem(String title, int index) {
+      final isSelected = _currentProfileTab == index;
+    return InkWell(
+      onTap: () => setState(() => _currentProfileTab = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? const Color(0xFF1F6EBB) : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF1F6EBB) : Colors.grey.shade600,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontSize: 14,
           ),
         ),
       ),
-      child: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: isSelected ? const Color(0xFF1F6EBB) : Colors.grey.shade600,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          fontSize: 14,
-        ),
-      ),
     );
+  }
+
+  Widget _buildActiveTabContent() {
+      if (_currentProfileTab == 0) {
+          // Personal Info
+          return Column(
+              children: [
+                _buildProfileField('Full Name', _profileData!['name'] ?? '', Icons.person_outline),
+                const SizedBox(height: 16),
+                _buildProfileField('Phone Number', _profileData!['phone'] ?? '', Icons.phone_outlined),
+                const SizedBox(height: 16),
+                _buildProfileField('Age', '${_profileData!['age'] ?? ''} years', null),
+                const SizedBox(height: 16),
+                _buildProfileField('Gender', _profileData!['gender'] ?? '', null),
+                const SizedBox(height: 16),
+                _buildProfileField('State of Origin', _profileData!['state'] ?? '', Icons.location_on_outlined),
+                const SizedBox(height: 16),
+                _buildProfileField('Occupation', _profileData!['occupation'] ?? '', Icons.work_outline),
+              ],
+          );
+      } else if (_currentProfileTab == 1) {
+          // Emergency
+          return _buildEmergencyTab();
+      } else {
+          // Health Info (Placeholder)
+           return const Center(child: Padding(
+             padding: EdgeInsets.only(top: 40.0),
+             child: Text("Health Information not available", style: TextStyle(color: Colors.grey)),
+           ));
+      }
+  }
+
+  Widget _buildEmergencyTab() {
+      final emergencyNo = _profileData!['emergency_no'];
+      
+      if (_isUpdatingEmergency) {
+          return const Center(child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: CircularProgressIndicator(),
+          ));
+      }
+
+      if (emergencyNo == null || emergencyNo.toString().isEmpty) {
+          return Column(
+              children: [
+                   Icon(Icons.contact_emergency, size: 60, color: Colors.grey.shade300),
+                   const SizedBox(height: 16),
+                   const Text(
+                       "No emergency contact added",
+                       style: TextStyle(color: Colors.grey, fontSize: 16),
+                   ),
+                   const SizedBox(height: 24),
+                   ElevatedButton.icon(
+                       onPressed: () => _showEmergencyDialog(),
+                       icon: const Icon(Icons.add),
+                       label: const Text("Add Emergency Number"),
+                       style: ElevatedButton.styleFrom(
+                           backgroundColor: const Color(0xFF1F6EBB),
+                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                       ),
+                   ),
+              ],
+          );
+      }
+      
+      return Column(
+          children: [
+               Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade100),
+                  ),
+                  child: Row(
+                      children: [
+                          Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.phone_in_talk, color: Colors.red),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      const Text(
+                                          "Emergency Contact",
+                                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                          emergencyNo,
+                                          style: const TextStyle(
+                                              fontSize: 18, 
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                          ),
+                                      ),
+                                  ],
+                              ),
+                          ),
+                      ],
+                  ),
+               ),
+               const SizedBox(height: 24),
+               Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                       OutlinedButton.icon(
+                           onPressed: () => _showEmergencyDialog(currentNumber: emergencyNo),
+                           icon: const Icon(Icons.edit, size: 18),
+                           label: const Text("Edit"),
+                           style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
+                       ),
+                       const SizedBox(width: 16),
+                       OutlinedButton.icon(
+                           onPressed: () {
+                               showDialog(
+                                   context: context, 
+                                   builder: (ctx) => AlertDialog(
+                                       title: const Text("Remove Number?"),
+                                       content: const Text("Are you sure you want to remove this emergency contact?"),
+                                       actions: [
+                                           TextButton(
+                                               onPressed: () => Navigator.pop(ctx), 
+                                               child: const Text("Cancel"),
+                                           ),
+                                           TextButton(
+                                               onPressed: () {
+                                                   Navigator.pop(ctx);
+                                                   _updateEmergencyNumber(null);
+                                               }, 
+                                               child: const Text("Remove", style: TextStyle(color: Colors.red)),
+                                           ),
+                                       ],
+                                   ),
+                               );
+                           },
+                           icon: const Icon(Icons.delete_outline, size: 18),
+                           label: const Text("Remove"),
+                           style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                       ),
+                   ],
+               ),
+          ],
+      );
   }
 
   Widget _buildProfileField(String label, String value, IconData? icon) {
