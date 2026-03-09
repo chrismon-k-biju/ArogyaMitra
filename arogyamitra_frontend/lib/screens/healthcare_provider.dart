@@ -240,10 +240,310 @@ class _HealthcareProviderScreenState extends State<HealthcareProviderScreen> {
   }
 
 
-class ProviderDashboard extends StatelessWidget {
+class ProviderDashboard extends StatefulWidget {
   final String doctorName;
 
   const ProviderDashboard({super.key, required this.doctorName});
+
+  @override
+  State<ProviderDashboard> createState() => _ProviderDashboardState();
+}
+
+class _ProviderDashboardState extends State<ProviderDashboard> {
+  int _selectedIndex = 0;
+  bool _isLoadingPatients = false;
+  List<dynamic> _todayPatients = [];
+  final _recordFormKey = GlobalKey<FormState>();
+  String _healthId = '';
+  String _recordType = 'General Checkup';
+  String _description = '';
+  bool _isSubmittingRecord = false;
+
+  final List<String> _recordTypes = [
+    'General Checkup',
+    'Prescription',
+    'Lab Results',
+    'Referral',
+    'Other'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTodayPatients();
+  }
+
+  Future<void> _fetchTodayPatients() async {
+    setState(() => _isLoadingPatients = true);
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    
+    // Format today's date
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/doctor-appointments?doctorName=${Uri.encodeComponent(widget.doctorName)}&date=$todayStr'),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _todayPatients = jsonDecode(response.body);
+        });
+      } else {
+        print('Failed to fetch patients. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching patients: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPatients = false);
+      }
+    }
+  }
+
+  Widget _buildDashboardContent() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildStatsRow(),
+            const SizedBox(height: 20),
+            _buildActionButtons(),
+            const SizedBox(height: 20),
+            _buildCampModeButton(),
+            const SizedBox(height: 20),
+            _buildRecentPatients(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatientsContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text(
+            'Today\'s Patients',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        Expanded(
+          child: _isLoadingPatients
+              ? const Center(child: CircularProgressIndicator())
+              : _todayPatients.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No patients scheduled for today',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _todayPatients.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder: (context, index) {
+                        final patient = _todayPatients[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: CircleAvatar(
+                              backgroundColor: const Color(0xFF1F6EBB).withOpacity(0.1),
+                              child: const Icon(Icons.person, color: Color(0xFF1F6EBB)),
+                            ),
+                            title: Text(
+                              patient['health_id'], 
+                              style: const TextStyle(fontWeight: FontWeight.bold)
+                            ),
+                            subtitle: Text('Time: ${patient['time']} • ${patient['visit_type']}'),
+                            trailing: TextButton(
+                              onPressed: () {
+                                // Switch to Records tab to add a record for this patient
+                                setState(() {
+                                  _selectedIndex = 3; 
+                                });
+                              },
+                              child: const Text('Add Record'),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecordsContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Upload Patient Record',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Form(
+              key: _recordFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Health ID', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: 'e.g. AM123456',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    validator: (value) => value == null || value.isEmpty ? 'Please enter Health ID' : null,
+                    onSaved: (value) => _healthId = value!,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Record Type', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _recordType,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    items: _recordTypes.map((type) {
+                      return DropdownMenuItem(value: type, child: Text(type));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _recordType = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Description / Notes', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Enter diagnosis, prescription, or notes...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    validator: (value) => value == null || value.isEmpty ? 'Please enter description' : null,
+                    onSaved: (value) => _description = value!,
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isSubmittingRecord ? null : _submitMedicalRecord,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F6EBB),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: _isSubmittingRecord
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Upload Record', style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitMedicalRecord() async {
+    if (_recordFormKey.currentState!.validate()) {
+      _recordFormKey.currentState!.save();
+      setState(() => _isSubmittingRecord = true);
+
+      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final now = DateTime.now();
+      final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      try {
+        final response = await http.post(
+          Uri.parse('$baseUrl/api/medical-records'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'healthId': _healthId,
+            'doctorName': widget.doctorName,
+            'date': todayStr,
+            'recordType': _recordType,
+            'description': _description,
+          }),
+        );
+
+        if (response.statusCode == 201) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Medical record uploaded successfully', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+            );
+            _recordFormKey.currentState!.reset();
+            setState(() {
+              _selectedIndex = 0; // Go back to dashboard
+            });
+          }
+        } else {
+          throw Exception('Failed to upload record: ${response.body}');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isSubmittingRecord = false);
+        }
+      }
+    }
+  }
+
+  // Placeholder for Reports/profile for now until fully implemented
+  Widget _buildPlaceholder(String title) {
+    return Center(
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, color: Colors.grey),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -253,27 +553,27 @@ class ProviderDashboard extends StatelessWidget {
         children: [
           _buildHeader(),
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    _buildStatsRow(),
-                    const SizedBox(height: 20),
-                    _buildActionButtons(),
-                    const SizedBox(height: 20),
-                    _buildCampModeButton(),
-                    const SizedBox(height: 20),
-                    _buildRecentPatients(),
-                  ],
-                ),
-              ),
-            ),
+            child: _selectedIndex == 0
+                ? _buildDashboardContent()
+                : _selectedIndex == 1
+                    ? _buildPatientsContent()
+                    : _selectedIndex == 3
+                        ? _buildRecordsContent()
+                        : _buildPlaceholder(['Camp Mode', '', 'Profile'][_selectedIndex - 2]),
           ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+            if (index == 1) {
+              _fetchTodayPatients();
+            }
+          });
+        },
         selectedItemColor: const Color(0xFF1F6EBB),
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
@@ -281,7 +581,7 @@ class ProviderDashboard extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Patients'),
           BottomNavigationBarItem(icon: Icon(Icons.holiday_village_outlined), label: 'Camp Mode'),
-          BottomNavigationBarItem(icon: Icon(Icons.description_outlined), label: 'Reports'),
+          BottomNavigationBarItem(icon: Icon(Icons.description_outlined), label: 'Records'),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
@@ -308,7 +608,7 @@ class ProviderDashboard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    doctorName,
+                    widget.doctorName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -349,11 +649,11 @@ class ProviderDashboard extends StatelessWidget {
   Widget _buildStatsRow() {
     return Row(
       children: [
-        _buildStatCard('24', 'Patients\nToday'),
+        _buildStatCard('0', 'Patients\nToday'),
         const SizedBox(width: 10),
-        _buildStatCard('8', 'Pending\nReports'),
+        _buildStatCard('0', 'Pending\nReports'),
         const SizedBox(width: 10),
-        _buildStatCard('5', 'Follow-ups'),
+        _buildStatCard('0', 'Follow-ups'),
       ],
     );
   }
@@ -479,6 +779,7 @@ class ProviderDashboard extends StatelessWidget {
   Widget _buildRecentPatients() {
     return Container(
       padding: const EdgeInsets.all(16),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -499,10 +800,14 @@ class ProviderDashboard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 32),
+          const Center(
+            child: Text(
+              'No recent patients',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          ),
           const SizedBox(height: 16),
-          _buildPatientItem('Rajesh Kumar', '32 years • 2 hours ago', Colors.green),
-          _buildPatientItem('Amit Singh', '28 years • 4 hours ago', Colors.teal),
-          _buildPatientItem('Mohammed Ali', '35 years • Yesterday', Colors.blue),
         ],
       ),
     );

@@ -910,6 +910,8 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   bool _isUpdatingEmergency = false;
   List<dynamic> _appointments = [];
   bool _isLoadingAppointments = true;
+  List<dynamic> _medicalRecords = [];
+  bool _isLoadingRecords = true;
   Map<String, dynamic>? _profileData;
   bool _isLoadingProfile = false;
 
@@ -917,6 +919,29 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   void initState() {
     super.initState();
     _fetchAppointments();
+    _fetchMedicalRecords();
+  }
+
+  Future<void> _fetchMedicalRecords() async {
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/medical-records/${widget.healthId}'));
+      if (response.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            _medicalRecords = jsonDecode(response.body);
+            _isLoadingRecords = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load medical records');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingRecords = false);
+      }
+      print('Error fetching medical records: $e');
+    }
   }
 
   Future<void> _fetchAppointments() async {
@@ -1120,11 +1145,13 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 Expanded(
                   child: _selectedIndex == 0 
                       ? _buildHomeContent() 
-                      : _selectedIndex == 2 // Appointments Tab
-                          ? _buildAppointmentsContent()
-                          : _selectedIndex == 3 // Profile Tab
-                              ? _buildProfileContent()
-                              : Center(child: Text("Coming Soon", style: TextStyle(color: Colors.white))),
+                      : _selectedIndex == 1 // Records Tab
+                          ? _buildRecordsContent()
+                          : _selectedIndex == 2 // Appointments Tab
+                              ? _buildAppointmentsContent()
+                              : _selectedIndex == 3 // Profile Tab
+                                  ? _buildProfileContent()
+                                  : Center(child: Text("Coming Soon", style: TextStyle(color: Colors.white))),
                 ),
               ],
             ),
@@ -1264,7 +1291,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 icon: Icons.description_outlined,
                 color: const Color(0xFFE3F2FD),
                 iconColor: const Color(0xFF1976D2),
-                value: '12',
+                value: '0',
                 label: 'Health\nRecords',
               ),
               const SizedBox(width: 16),
@@ -1280,7 +1307,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 icon: Icons.notifications_none_outlined,
                 color: const Color(0xFFFFF3E0),
                 iconColor: const Color(0xFFF57C00),
-                value: '5',
+                value: '0',
                 label: 'Notifications',
               ),
             ],
@@ -1331,6 +1358,8 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           ),
           const SizedBox(height: 12),
           Container(
+            padding: const EdgeInsets.all(20),
+            width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1342,33 +1371,21 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                 _buildActivityItem(
-                  icon: Icons.favorite_border,
-                  color: const Color(0xFFE3F2FD),
-                  iconColor: const Color(0xFF1976D2),
-                  title: 'Blood Pressure Check',
-                  subtitle: 'PHC Ernakulam • 3 days ago',
-                ),
-                const Divider(height: 1, indent: 70, endIndent: 20),
-                 _buildActivityItem(
-                  icon: Icons.assignment_outlined,
-                  color: const Color(0xFFE8F5E9),
-                  iconColor: const Color(0xFF388E3C),
-                  title: 'Lab Test - Blood Sugar',
-                  subtitle: 'Lab Tech • 5 days ago',
-                ),
-              ],
+            child: const Center(
+              child: Text(
+                'No recent activity',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
             ),
           ),
-
           const SizedBox(height: 24),
 
           // Notifications
           _buildSectionHeader('Notifications'),
           const SizedBox(height: 12),
           Container(
+            padding: const EdgeInsets.all(20),
+            width: double.infinity,
              decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1380,32 +1397,139 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                 _buildNotificationItem(
-                   icon: Icons.notifications_none, 
-                   iconColor: const Color(0xFFF57C00),
-                   bgColor: const Color(0xFFFFF3E0),
-                   title: 'COVID-19 Booster dose due',
-                   subtitle: '2 days from now',
-                   actionText: 'Schedule',
-                 ),
-                 const Divider(height: 1, indent: 70, endIndent: 20),
-                 _buildNotificationItem(
-                   icon: Icons.notifications_none, 
-                   iconColor: const Color(0xFFF57C00),
-                   bgColor: const Color(0xFFFFF3E0),
-                   title: 'Follow-up visit for diabetes check',
-                   subtitle: 'Tomorrow, 10:00 AM',
-                   actionText: 'View Details',
-                 ),
-              ],
+            child: const Center(
+              child: Text(
+                'No new notifications',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
             ),
           ),
-
           const SizedBox(height: 100), // Bottom padding for FAB
         ],
       ),
+    );
+  }
+
+  Widget _buildRecordsContent() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text(
+                'My Medical Records',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F7FA),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: _isLoadingRecords
+                ? const Center(child: CircularProgressIndicator())
+                : _medicalRecords.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No medical records found',
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: _medicalRecords.length,
+                        itemBuilder: (context, index) {
+                          final record = _medicalRecords[index];
+                          // Convert timestamp to a more readable format if needed or just use date
+                          final dateText = record['date'] != null ? record['date'].toString().split('T')[0] : 'Unknown Date';
+                          
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1F6EBB).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          record['record_type'] ?? 'Record',
+                                          style: const TextStyle(
+                                            color: Color(0xFF1F6EBB),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        dateText,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    record['description'] ?? 'No description',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person, size: 16, color: Colors.grey),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Dr. ${record['doctor_name'] ?? 'Unknown'}',
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1788,112 +1912,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
 
 
 
-  Widget _buildActivityItem({
-    required IconData icon,
-    required Color color,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildNotificationItem({
-    required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
-    required String title,
-    required String subtitle,
-    required String actionText,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      actionText,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF1F6EBB),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
@@ -1902,6 +1921,8 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
         setState(() => _selectedIndex = index);
         if (index == 0) {
           _fetchAppointments();
+        } else if (index == 1) {
+          _fetchMedicalRecords();
         }
       },
       child: Column(

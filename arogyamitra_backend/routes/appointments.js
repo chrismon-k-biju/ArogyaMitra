@@ -84,4 +84,65 @@ router.get('/doctors', async (req, res) => {
     }
 });
 
+// Get all patients (appointments) for a specific doctor on a specific date
+router.get('/doctor-appointments', async (req, res) => {
+    try {
+        const { doctorName, date } = req.query;
+        if (!doctorName || !date) {
+            return res.status(400).json({ message: 'doctorName and date are required' });
+        }
+        
+        const result = await pool.query(
+            'SELECT * FROM appointments WHERE doctor_name = $1 AND date = $2 ORDER BY time ASC',
+            [doctorName, date]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching doctor appointments' });
+    }
+});
+
+// Add a new medical record
+router.post('/medical-records', async (req, res) => {
+    try {
+        const { healthId, doctorName, date, recordType, description } = req.body;
+
+        if (!healthId || !doctorName || !date || !recordType) {
+            return res.status(400).json({ message: 'Required fields missing' });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO medical_records 
+             (health_id, doctor_name, date, record_type, description) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING *`,
+            [healthId, doctorName, date, recordType, description]
+        );
+
+        res.status(201).json({
+            message: 'Medical record added successfully',
+            record: result.rows[0]
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error adding medical record' });
+    }
+});
+
+// Get all medical records for a specific health_id
+router.get('/medical-records/:healthId', async (req, res) => {
+    try {
+        const { healthId } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM medical_records WHERE health_id = $1 ORDER BY date DESC, created_at DESC',
+            [healthId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching medical records' });
+    }
+});
+
 module.exports = router;
