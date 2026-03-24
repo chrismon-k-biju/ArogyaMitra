@@ -12,6 +12,7 @@ router.post('/register', async (req, res) => {
       age,
       gender,
       state,
+      district,
       occupation,
       password
     } = req.body;
@@ -21,10 +22,10 @@ router.post('/register', async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO registrations
-       (phone, name, age, gender, state, occupation, password, health_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       (phone, name, age, gender, state, district, occupation, password, health_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING health_id`,
-      [phone, name, age, gender, state, occupation, hashedPassword, healthId]
+      [phone, name, age, gender, state, district, occupation, hashedPassword, healthId]
     );
 
     res.status(201).json({
@@ -53,6 +54,27 @@ router.get('/profile/:healthId', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching profile' });
+  }
+});
+
+router.put('/profile/:healthId/health', async (req, res) => {
+  try {
+    const { healthId } = req.params;
+    const { blood_group, allergies } = req.body;
+
+    const result = await pool.query(
+      'UPDATE registrations SET blood_group = $1, allergies = $2 WHERE health_id = $3 RETURNING *',
+      [blood_group, allergies, healthId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Health info updated successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating health info' });
   }
 });
 

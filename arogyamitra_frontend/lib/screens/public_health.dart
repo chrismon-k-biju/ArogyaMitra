@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'downloader/downloader.dart';
 
 class PublicHealthScreen extends StatefulWidget {
   const PublicHealthScreen({super.key});
@@ -299,6 +300,40 @@ class PublicHealthDashboard extends StatefulWidget {
 
 class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
   String? _selectedDistrict;
+  String _activeCases = '0';
+  String _vaccinationRate = '0';
+  List<dynamic> _activeAlertsList = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    setState(() => _isLoading = true);
+    try {
+      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final districtQuery = _selectedDistrict != null ? '?district=${Uri.encodeComponent(_selectedDistrict!)}' : '';
+      final response = await http.get(Uri.parse('$baseUrl/api/alerts$districtQuery'));
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _activeCases = data['totalDisease']?.toString() ?? '0';
+          _vaccinationRate = data['totalVaccination']?.toString() ?? '0';
+          _activeAlertsList = data['feed'] ?? [];
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading stats: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +380,10 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
                       child: Text(district),
                     );
                   }).toList(),
-                  onChanged: (val) => setState(() => _selectedDistrict = val),
+                  onChanged: (val) {
+                    setState(() => _selectedDistrict = val);
+                    _fetchStats();
+                  },
                  ),
               ),
             ),
@@ -360,45 +398,21 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
             Row(
               children: [
                 _buildStatCard(
-                  icon: Icons.show_chart,
+                  icon: Icons.coronavirus_outlined,
                   iconColor: Colors.orange,
-                  value: '0',
-                  label: 'Active Cases',
-                  trend: '0% from last week',
+                  value: _activeCases,
+                  label: 'Disease Alerts',
+                  trend: 'From selected district',
                   trendColor: Colors.grey,
                   bgColor: const Color(0xFFFFF8E1),
                 ),
                 const SizedBox(width: 12),
                 _buildStatCard(
-                  icon: Icons.trending_up,
+                  icon: Icons.vaccines_outlined,
                   iconColor: Colors.green,
-                  value: '0%',
-                  label: 'Vaccination Rate',
-                  trend: '0% from last week',
-                  trendColor: Colors.grey,
-                  bgColor: const Color(0xFFE8F5E9),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildStatCard(
-                  icon: Icons.warning_amber_rounded,
-                  iconColor: Colors.red,
-                  value: '0',
-                  label: 'Outbreak Alerts',
-                  trend: '0 from last week',
-                  trendColor: Colors.grey,
-                  bgColor: const Color(0xFFFFEBEE),
-                ),
-                const SizedBox(width: 12),
-                _buildStatCard(
-                  icon: Icons.people_outline,
-                  iconColor: Colors.green,
-                  value: '0',
-                  label: 'Health Camps',
-                  trend: '0 from last week',
+                  value: _vaccinationRate,
+                  label: 'Total Vaccinations',
+                  trend: 'From selected district',
                   trendColor: Colors.grey,
                   bgColor: const Color(0xFFE8F5E9),
                 ),
@@ -429,15 +443,30 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
-                      child: Text(
-                        'No active alerts',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ),
-                  ),
+                  if (_isLoading)
+                     const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
+                  else if (_activeAlertsList.isEmpty)
+                     const Center(
+                       child: Padding(
+                         padding: EdgeInsets.symmetric(vertical: 20.0),
+                         child: Text('No active alerts', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                       ),
+                     )
+                  else
+                     Column(
+                       children: _activeAlertsList.map((alert) {
+                         bool isDisease = alert['alert_type'] == 'Disease';
+                         Color color = isDisease ? Colors.red : Colors.green;
+                         String title = isDisease ? 'Disease: ${alert['disease_name']}' : 'Vaccine: ${alert['vaccination_name']}';
+                         String subtitle = isDisease 
+                           ? 'Affected ID: ${alert['affected_health_id']}\nReported by: ${alert['reporter_name']}' 
+                           : 'Vaccinated: ${alert['patients_count']}\nReported by: ${alert['reporter_name']}';
+                         return Padding(
+                           padding: const EdgeInsets.only(bottom: 8.0),
+                           child: _buildAlertItem(title, subtitle, isDisease ? 'HIGH' : 'LOG', color),
+                         );
+                       }).toList(),
+                     )
                 ],
               ),
             ),
@@ -446,39 +475,12 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
             // Action Buttons
             Row(
               children: [
-                Expanded(child: _buildActionButton('View Analytics', Icons.show_chart, const Color(0xFF1565C0))),
+                Expanded(child: _buildActionButton('View Analytics', Icons.show_chart, const Color(0xFF1565C0), _showAnalyticsReport)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildActionButton('Generate Report', Icons.analytics_outlined, Colors.green)),
+                Expanded(child: _buildActionButton('Generate Report', Icons.analytics_outlined, Colors.green, _downloadReport)),
               ],
             ),
             
-            const SizedBox(height: 24),
-
-            // Recent Activity
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Recent Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
-                      child: Text(
-                        'No recent activity',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -559,49 +561,109 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color),
-          const SizedBox(height: 8),
-          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
-        ],
+  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.5)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(height: 8),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildActivityItem(Color dotColor, String title, String subtitle) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 4),
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: dotColor,
-            shape: BoxShape.circle,
-          ),
+  void _showAnalyticsReport() {
+    if (_selectedDistrict == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a district first')));
+      return;
+    }
+    
+    String reportText = '''
+**OFFICIAL HEALTH REPORT**
+District: $_selectedDistrict
+Date: ${DateTime.now().toString().split(' ')[0]}
+
+**SUMMARY STATISTICS**
+• Total Disease Alerts: $_activeCases
+• Total Vaccinations Administered: $_vaccinationRate
+
+**DETAILED ALERTS LOG**
+''';
+
+    for(var alert in _activeAlertsList) {
+       bool isDisease = alert['alert_type'] == 'Disease';
+       reportText += isDisease 
+         ? "• [DISEASE] ${alert['disease_name']} | Affected ID: ${alert['affected_health_id']} | Reported by: ${alert['reporter_name']}\n"
+         : "• [VACCINE] ${alert['vaccination_name']} | Vaccinated: ${alert['patients_count']} | Reported by: ${alert['reporter_name']}\n";
+    }
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.analytics, color: Color(0xFF1565C0)),
+            const SizedBox(width: 10),
+            Text('Analytics: $_selectedDistrict'),
+          ]
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
-          ),
+        content: SingleChildScrollView(
+          child: Text(reportText, style: const TextStyle(height: 1.5)),
         ),
-      ],
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))
+        ],
+      )
     );
+  }
+
+  void _downloadReport() {
+    if (_selectedDistrict == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a district first')));
+      return;
+    }
+    
+    String reportContent = '''
+=========================================================
+            GOVERNMENT OF KERALA            
+        DEPARTMENT OF HEALTH AND FAMILY WELFARE        
+=========================================================
+
+OFFICIAL HEALTH REPORT
+District: $_selectedDistrict
+Generated On: ${DateTime.now().toString()}
+
+--- SUMMARY STATISTICS ---
+Total Disease Alerts          : $_activeCases
+Total Vaccinations Administered: $_vaccinationRate
+
+--- DETAILED ALERTS LOG ---
+''';
+
+    for(var alert in _activeAlertsList) {
+       bool isDisease = alert['alert_type'] == 'Disease';
+       reportContent += isDisease 
+         ? "[DISEASE] ${alert['disease_name']} | Affected ID: ${alert['affected_health_id']} | Reported by: ${alert['reporter_name']}\n"
+         : "[VACCINE] ${alert['vaccination_name']} | Vaccinated: ${alert['patients_count']} | Reported by: ${alert['reporter_name']}\n";
+    }
+
+    reportContent += '\n=========================================================\n** END OF REPORT **';
+
+    if (kIsWeb) {
+      downloadDocument(reportContent, "health_report_${_selectedDistrict}.txt");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report generated and downloading...')));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Download only supported on Web currently')));
+    }
   }
 }

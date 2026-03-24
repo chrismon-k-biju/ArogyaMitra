@@ -43,6 +43,7 @@ app.use('/api', require('./routes/appointments'));
 app.use('/api', require('./routes/register'));
 app.use('/api', require('./routes/login'));
 app.use('/api', require('./routes/provider_login'));
+app.use('/api', require('./routes/alerts'));
 
 const PORT = 3000;
 app.listen(PORT, () => {

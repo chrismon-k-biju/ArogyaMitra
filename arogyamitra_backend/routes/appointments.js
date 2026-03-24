@@ -69,18 +69,55 @@ router.delete('/delete-appointment/:id', async (req, res) => {
     }
 });
 
-// Get list of doctors 
-// Logic: Doctors are healthworkers with role 'Doctor' (case-insensitive check or specific role logic)
-// Assuming roles are like 'Doctor', 'Nurse', etc.
-router.get('/doctors', async (req, res) => {
+// Get list of distinct hospitals
+router.get('/hospitals', async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT name FROM healthworkers WHERE LOWER(role) = 'doctor'"
+            "SELECT DISTINCT hospital_name FROM healthworkers WHERE hospital_name IS NOT NULL ORDER BY hospital_name"
         );
+        res.json(result.rows.map(row => row.hospital_name));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching hospitals' });
+    }
+});
+
+// Get list of doctors 
+// Logic: Doctors are healthworkers with role 'Doctor'
+router.get('/doctors', async (req, res) => {
+    try {
+        const { hospitalName } = req.query;
+        let query = "SELECT name FROM healthworkers WHERE LOWER(role) = 'doctor'";
+        let params = [];
+        if (hospitalName) {
+            query += " AND hospital_name = $1";
+            params.push(hospitalName);
+        }
+        query += " ORDER BY name";
+        const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error fetching doctors' });
+    }
+});
+
+// Get all booked time slots for a specific doctor on a specific date
+router.get('/booked-slots', async (req, res) => {
+    try {
+        const { doctorName, date } = req.query;
+        if (!doctorName || !date) {
+            return res.status(400).json({ message: 'doctorName and date are required' });
+        }
+        
+        const result = await pool.query(
+            'SELECT time FROM appointments WHERE doctor_name = $1 AND date = $2',
+            [doctorName, date]
+        );
+        res.json(result.rows.map(row => row.time));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching booked slots' });
     }
 });
 
@@ -143,6 +180,39 @@ router.get('/medical-records/:healthId', async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Server error fetching medical records' });
     }
+});
+
+// Mocked Public Health Stats Route
+router.get('/public-health-stats', async (req, res) => {
+  try {
+    const { district } = req.query;
+    
+    // In a production app, complex joins with `registrations` table filtering by district would be here.
+    // For this demonstration, we query totals.
+    const activeCasesResult = await pool.query('SELECT COUNT(*) as count FROM medical_records');
+    const healthCampsResult = await pool.query('SELECT COUNT(DISTINCT doctor_name) as count FROM medical_records');
+    
+    // Generate dummy active alerts
+    const alertsList = [
+      { title: "Dengue Warning", subtitle: "New cases reported in the region.", priority: "HIGH", color: "error" },
+      { title: "Typhoid Watch", subtitle: "Minor incidence detected, monitoring situation.", priority: "MODERATE", color: "warning" }
+    ];
+    
+    res.json({
+      activeCases: activeCasesResult.rows[0].count,
+      vaccinationRate: "75%",
+      outbreakAlerts: alertsList.length,
+      healthCamps: healthCampsResult.rows[0].count,
+      activeAlertsList: alertsList,
+      recentActivityList: [
+        { title: "Camp Concluded", subtitle: "A medical camp in the selected district finished successfully." },
+        { title: "New Records Synced", subtitle: "50+ new medical records uploaded today system-wide." }
+      ]
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching stats' });
+  }
 });
 
 module.exports = router;

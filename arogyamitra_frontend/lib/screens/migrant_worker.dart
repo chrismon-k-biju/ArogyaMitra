@@ -4,6 +4,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 
+bool _isHindiSelected = false;
+
+String _t(String en, String hi) {
+  return _isHindiSelected ? hi : en;
+}
+
 class MigrantWorkerScreen extends StatefulWidget {
   const MigrantWorkerScreen({super.key});
 
@@ -16,10 +22,7 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
 
   final List<Map<String, dynamic>> _languages = [
     {'name': 'English', 'flag': '🇬🇧'},
-    {'name': 'മലയാളം', 'flag': '🇮🇳'},
     {'name': 'हिंदी', 'flag': '🇮🇳'},
-    {'name': 'বাংলা', 'flag': '🇮🇳'},
-    {'name': 'தமிழ்', 'flag': '🇮🇳'},
   ];
 
   @override
@@ -52,18 +55,18 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
               ),
               const Icon(Icons.language, size: 50, color: Colors.white),
               const SizedBox(height: 20),
-              const Text(
-                'ArogyaMitra',
-                style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+              Text(
+                _t('ArogyaMitra', 'आरोग्यमित्र'),
+                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
               ),
-              const Text(
-                'Your Health Companion',
-                style: TextStyle(color: Colors.white70, fontSize: 16),
+              Text(
+                _t('Your Health Companion', 'आपका स्वास्थ्य साथी'),
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
               const SizedBox(height: 30),
-              const Text(
-                'Select Your Language / भाषा चुनें',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+              Text(
+                _t('Select Your Language', 'अपनी भाषा चुनें'),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 20),
               Expanded(
@@ -110,6 +113,7 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
+                      _isHindiSelected = _selectedIndex == 1;
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const RegistrationScreen()),
@@ -120,12 +124,12 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
                       foregroundColor: const Color(0xFF1F6EBB),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                         SizedBox(width: 8),
-                         Icon(Icons.arrow_forward),
+                         Text(_t('Get Started', 'शुरू करें'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                         const SizedBox(width: 8),
+                         const Icon(Icons.arrow_forward),
                       ],
                     ),
                   ),
@@ -160,6 +164,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String? _selectedGender;
   String? _selectedState;
 
+  final TextEditingController _districtController = TextEditingController();
+
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _states = [
     'Kerala', 'Tamil Nadu', 'Karnataka', 'Andhra Pradesh', 
@@ -174,6 +180,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _ageController.dispose();
     _occupationController.dispose();
     _passwordController.dispose();
+    _districtController.dispose();
     super.dispose();
   }
 
@@ -188,9 +195,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1F6EBB)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Registration',
-          style: TextStyle(
+        title: Text(
+          _t('Registration', 'पंजीकरण'),
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -321,25 +328,41 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(height: 20),
 
                       // State of Origin Field
-                      _buildLabel('State of Origin', Icons.location_on_outlined),
+                      _buildLabel(_t('State of Origin', 'मूल राज्य'), Icons.location_on_outlined),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: _selectedState,
                         items: _states.map((String state) {
                           return DropdownMenuItem(
                             value: state,
-                            child: Text(state),
+                            child: Text(_t(state, state)), // Keep english state names or add maps if needed
                           );
                         }).toList(),
                         onChanged: (val) => setState(() => _selectedState = val),
                         decoration: _inputDecoration(''),
                         icon: const Icon(Icons.keyboard_arrow_down),
-                        validator: (value) => value == null ? 'Please select state' : null,
+                        validator: (value) => value == null ? _t('Please select state', 'कृपया राज्य चुनें') : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // District Field
+                      _buildLabel(_t('District of Origin', 'मूल जिला'), Icons.location_city_outlined),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _districtController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: _inputDecoration(_t('Enter your district', 'अपना जिला दर्ज करें')),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return _t('Please enter district', 'कृपया जिला दर्ज करें');
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
 
                       // Occupation Field
-                      _buildLabel('Occupation', Icons.work_outline),
+                      _buildLabel(_t('Occupation', 'व्यवसाय'), Icons.work_outline),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _occupationController,
@@ -429,14 +452,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.qr_code, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.qr_code, size: 20),
+                      const SizedBox(width: 8),
                       Text(
-                        'Generate Health ID',
-                        style: TextStyle(
+                        _t('Generate Health ID', 'हेल्थ आईडी बनाएं'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -465,6 +488,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'age': _ageController.text,
           'gender': _selectedGender,
           'state': _selectedState,
+          'district': _districtController.text,
           'occupation': _occupationController.text,
           'password': _passwordController.text,
         }),
@@ -557,8 +581,8 @@ class HealthIDScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1F6EBB)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Your Health ID',
+        title: Text(
+          _t('Your Health ID', 'अपनी हेल्थ आईडी'),
           style: TextStyle(
             color: Colors.black,
             fontSize: 20,
@@ -591,8 +615,8 @@ class HealthIDScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Your Health ID',
+              Text(
+                _t('Your Health ID', 'अपनी हेल्थ आईडी'),
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.black87,
@@ -614,9 +638,9 @@ class HealthIDScreen extends StatelessWidget {
                 text: TextSpan(
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                   children: [
-                    const TextSpan(text: 'Save this QR code for '),
+                    TextSpan(text: _t('Save this QR code for ', 'इस QR कोड को सहेजें ')),
                     TextSpan(
-                      text: 'quick access',
+                      text: _t('quick access', 'त्वरित पहुँच के लिए'),
                       style: TextStyle(
                         color: Colors.grey.shade700,
                         fontWeight: FontWeight.w600,
@@ -655,7 +679,7 @@ class HealthIDScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    Navigator.canPop(context) ? 'Back to Dashboard' : 'Continue to Dashboard',
+                    Navigator.canPop(context) ? _t('Back to Dashboard', 'डैशबोर्ड पर वापस जाएं') : _t('Continue to Dashboard', 'डैशबोर्ड पर आगे बढ़ें'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -760,8 +784,8 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1F6EBB)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Migrant Login',
+        title: Text(
+          _t('Migrant Login', 'प्रवासी लॉगिन'),
           style: TextStyle(
             color: Colors.black,
             fontSize: 20,
@@ -778,8 +802,8 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
-                const Text(
-                  'Welcome Back!',
+                Text(
+                  _t('Welcome Back!', 'वापसी पर स्वागत है!'),
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -788,8 +812,8 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Please sign in to continue',
+                Text(
+                  _t('Please sign in to continue', 'जारी रखने के लिए कृपया साइन इन करें'),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
@@ -802,7 +826,7 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration('Enter your phone number', Icons.phone_outlined),
+                  decoration: _inputDecoration(_t('Enter your phone number', 'अपना फ़ोन नंबर दर्ज करें'), Icons.phone_outlined),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
@@ -816,7 +840,7 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: _inputDecoration('Enter password', Icons.lock_outline),
+                  decoration: _inputDecoration(_t('Enter password', 'पासवर्ड दर्ज करें'), Icons.lock_outline),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -845,8 +869,8 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                           height: 24,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
-                      : const Text(
-                          'Login',
+                      : Text(
+                          _t('Login', 'लॉगिन'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1097,8 +1121,8 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                        Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Welcome back,',
+                          Text(
+                            _t('Welcome back,', 'वापसी पर स्वागत है,'),
                             style: TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                           const SizedBox(height: 4),
@@ -1175,11 +1199,11 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_outlined, 'Home'),
-                _buildNavItem(1, Icons.description_outlined, 'Records'),
+                _buildNavItem(0, Icons.home_outlined, _t('Home', 'होम')),
+                _buildNavItem(1, Icons.description_outlined, _t('Records', 'रिकॉर्ड्स')),
                 const SizedBox(width: 48), // Space for FAB
-                _buildNavItem(2, Icons.calendar_today_outlined, 'Appointments'),
-                _buildNavItem(3, Icons.person_outline, 'Profile'),
+                _buildNavItem(2, Icons.calendar_today_outlined, _t('Appointments', 'अपॉइंटमेंट्स')),
+                _buildNavItem(3, Icons.person_outline, _t('Profile', 'प्रोफ़ाइल')),
               ],
             ),
           ),
@@ -1260,9 +1284,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Your Health ID',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      Text(
+                        _t('Your Health ID', 'अपनी हेल्थ आईडी'),
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1292,7 +1316,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 color: const Color(0xFFE3F2FD),
                 iconColor: const Color(0xFF1976D2),
                 value: '0',
-                label: 'Health\nRecords',
+                label: _t('Health\nRecords', 'स्वास्थ्य\nरिकॉर्ड्स'),
               ),
               const SizedBox(width: 16),
               _buildStatCard(
@@ -1300,7 +1324,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 color: const Color(0xFFE8F5E9),
                 iconColor: const Color(0xFF388E3C),
                 value: _appointments.length.toString(),
-                label: 'Appointments',
+                label: _t('Appointments', 'अपॉइंटमेंट्स'),
               ),
               const SizedBox(width: 16),
               _buildStatCard(
@@ -1308,7 +1332,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 color: const Color(0xFFFFF3E0),
                 iconColor: const Color(0xFFF57C00),
                 value: '0',
-                label: 'Notifications',
+                label: _t('Notifications', 'सूचनाएं'),
               ),
             ],
           ),
@@ -1319,15 +1343,15 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               _buildSectionHeader('Next Appointment'),
+               _buildSectionHeader(_t('Next Appointment', 'अगला अपॉइंटमेंट')),
                GestureDetector(
                  onTap: () => setState(() {
                     _selectedIndex = 2;
                     _fetchAppointments();
                  }), // Switch to Appointments tab
-                 child: const Text(
-                   'View All',
-                   style: TextStyle(
+                 child: Text(
+                   _t('View All', 'सभी देखें'),
+                   style: const TextStyle(
                      color: Color(0xFF1F6EBB),
                      fontWeight: FontWeight.w600,
                      fontSize: 14,
@@ -1345,10 +1369,10 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
            Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               _buildSectionHeader('Recent Health Activity'),
-               const Text(
-                 'View All',
-                 style: TextStyle(
+               _buildSectionHeader(_t('Recent Health Activity', 'हालिया स्वास्थ्य गतिविधि')),
+               Text(
+                 _t('View All', 'सभी देखें'),
+                 style: const TextStyle(
                    color: Color(0xFF1F6EBB),
                    fontWeight: FontWeight.w600,
                    fontSize: 14,
@@ -1357,31 +1381,11 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(20),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                'No recent activity',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
-          ),
+          _buildRecentActivityList(),
           const SizedBox(height: 24),
 
           // Notifications
-          _buildSectionHeader('Notifications'),
+          _buildSectionHeader(_t('Notifications', 'सूचनाएं')),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
@@ -1397,16 +1401,97 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 ),
               ],
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'No new notifications',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                _t('No new notifications', 'कोई नई सूचनाएं नहीं'),
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
           ),
           const SizedBox(height: 100), // Bottom padding for FAB
         ],
       ),
+    );
+  }
+
+  Widget _buildRecentActivityList() {
+    List<Map<String, dynamic>> activities = [];
+    
+    for (var appt in _appointments) {
+      activities.add({
+        'title': _t('Appointment: ${appt['visit_type'] ?? 'Visit'}', 'अपॉइंटमेंट: ${appt['visit_type'] ?? 'विजिट'}'),
+        'subtitle': _t('${appt['date']} with Dr. ${appt['doctor_name']}', '${appt['date']} डॉ. ${appt['doctor_name']} के साथ'),
+        'date': appt['date'],
+        'icon': Icons.calendar_today,
+        'color': Colors.blue,
+      });
+    }
+    
+    for (var record in _medicalRecords) {
+      activities.add({
+        'title': _t('Medical Record Added', 'मेडिकल रिकॉर्ड जोड़ा गया'),
+        'subtitle': _t('${record['record_type']} by Dr. ${record['doctor_name']}', '${record['record_type']} डॉ. ${record['doctor_name']} द्वारा'),
+        'date': record['date'],
+        'icon': Icons.description,
+        'color': Colors.green,
+      });
+    }
+
+    if (activities.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Center(
+          child: Text(_t('No recent activity', 'कोई हालिया गतिविधि नहीं'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        ),
+      );
+    }
+
+    // Sort by date descending (simplified string sort)
+    activities.sort((a, b) => (b['date'] ?? '').compareTo(a['date'] ?? ''));
+    
+    // Take top 3
+    final recent = activities.take(3).toList();
+
+    return Column(
+      children: recent.map((act) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: act['color'].withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(act['icon'], color: act['color'], size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Text(act['title'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                   const SizedBox(height: 4),
+                   Text(act['subtitle'], style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      )).toList(),
     );
   }
 
@@ -1417,10 +1502,10 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
-                'My Medical Records',
-                style: TextStyle(
+                _t('My Medical Records', 'मेरे मेडिकल रिकॉर्ड्स'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -1443,10 +1528,10 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
             child: _isLoadingRecords
                 ? const Center(child: CircularProgressIndicator())
                 : _medicalRecords.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'No medical records found',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          _t('No medical records found', 'कोई मेडिकल रिकॉर्ड नहीं मिला'),
+                          style: const TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       )
                     : ListView.builder(
@@ -1498,7 +1583,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    record['description'] ?? 'No description',
+                                    record['description'] ?? _t('No description', 'कोई विवरण नहीं'),
                                     style: const TextStyle(
                                       fontSize: 15,
                                       color: Colors.black87,
@@ -1542,9 +1627,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'My Appointments',
-                style: TextStyle(
+              Text(
+                _t('My Appointments', 'मेरे अपॉइंटमेंट्स'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white, // Since it's on the gradient background
@@ -1566,7 +1651,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                   }
                 },
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Book New'),
+                label: Text(_t('Book New', 'नया बुक करें')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF1F6EBB),
@@ -1600,7 +1685,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                             Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.shade300),
                             const SizedBox(height: 16),
                             Text(
-                              'No appointments yet',
+                              _t('No appointments yet', 'अभी तक कोई अपॉइंटमेंट नहीं'),
                               style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
                             ),
                           ],
@@ -1759,8 +1844,8 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey.shade200),
         ),
-        child: const Center(
-          child: Text("No upcoming appointments"),
+        child: Center(
+          child: Text(_t("No upcoming appointments", "कोई आगामी अपॉइंटमेंट नहीं")),
         ),
       );
     }
@@ -2057,9 +2142,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                         icon: const Icon(Icons.arrow_back, color: Colors.black),
                         onPressed: () => setState(() => _selectedIndex = 0),
                       ),
-                      const Text(
-                        'Profile',
-                        style: TextStyle(
+                      Text(
+                        _t('Profile', 'प्रोफ़ाइल'),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
@@ -2116,9 +2201,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                     // Tabs
                     Row(
                       children: [
-                        Expanded(child: _buildTabItem('Personal Info', 0)),
-                        Expanded(child: _buildTabItem('Emergency', 1)),
-                        Expanded(child: _buildTabItem('Health Info', 2)),
+                        Expanded(child: _buildTabItem(_t('Personal Info', 'व्यक्तिगत जानकारी'), 0)),
+                        Expanded(child: _buildTabItem(_t('Emergency', 'आपातकालीन'), 1)),
+                        Expanded(child: _buildTabItem(_t('Health Info', 'स्वास्थ्य जानकारी'), 2)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -2169,29 +2254,117 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           // Personal Info
           return Column(
               children: [
-                _buildProfileField('Full Name', _profileData!['name'] ?? '', Icons.person_outline),
+                _buildProfileField(_t('Full Name', 'पूरा नाम'), _profileData!['name'] ?? '', Icons.person_outline),
                 const SizedBox(height: 16),
-                _buildProfileField('Phone Number', _profileData!['phone'] ?? '', Icons.phone_outlined),
+                _buildProfileField(_t('Phone Number', 'फ़ोन नंबर'), _profileData!['phone'] ?? '', Icons.phone_outlined),
                 const SizedBox(height: 16),
-                _buildProfileField('Age', '${_profileData!['age'] ?? ''} years', null),
+                _buildProfileField(_t('Age', 'आयु'), '${_profileData!['age'] ?? ''} ${_t('years', 'वर्ष')}', null),
                 const SizedBox(height: 16),
-                _buildProfileField('Gender', _profileData!['gender'] ?? '', null),
+                _buildProfileField(_t('Gender', 'लिंग'), _profileData!['gender'] ?? '', null),
                 const SizedBox(height: 16),
-                _buildProfileField('State of Origin', _profileData!['state'] ?? '', Icons.location_on_outlined),
+                _buildProfileField(_t('State of Origin', 'मूल राज्य'), _profileData!['state'] ?? '', Icons.location_on_outlined),
                 const SizedBox(height: 16),
-                _buildProfileField('Occupation', _profileData!['occupation'] ?? '', Icons.work_outline),
+                _buildProfileField(_t('Occupation', 'पेशा'), _profileData!['occupation'] ?? '', Icons.work_outline),
               ],
           );
       } else if (_currentProfileTab == 1) {
           // Emergency
           return _buildEmergencyTab();
       } else {
-          // Health Info (Placeholder)
-           return const Center(child: Padding(
-             padding: EdgeInsets.only(top: 40.0),
-             child: Text("Health Information not available", style: TextStyle(color: Colors.grey)),
-           ));
+          // Health Info
+           return _buildHealthInfoTab();
       }
+  }
+
+  bool _isUpdatingHealthInfo = false;
+
+  Future<void> _updateHealthInfo(String bloodGroup, String allergies) async {
+    setState(() => _isUpdatingHealthInfo = true);
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/profile/${widget.healthId}/health'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'blood_group': bloodGroup, 'allergies': allergies}),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+            if (_profileData != null) {
+                _profileData!['blood_group'] = bloodGroup;
+                _profileData!['allergies'] = allergies;
+            }
+        });
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Health info updated')),
+          );
+        }
+      }
+    } catch (e) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+    } finally {
+       setState(() => _isUpdatingHealthInfo = false);
+    }
+  }
+
+  void _showHealthInfoDialog({String? currentBlood, String? currentAllergies}) {
+      final TextEditingController bloodController = TextEditingController(text: currentBlood);
+      final TextEditingController allergiesController = TextEditingController(text: currentAllergies);
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+            title: const Text('Update Health Info'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: bloodController,
+                    decoration: const InputDecoration(labelText: 'Blood Group', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                    controller: allergiesController,
+                    decoration: const InputDecoration(labelText: 'Allergies', border: OutlineInputBorder()),
+                ),
+              ],
+            ),
+            actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                ElevatedButton(
+                    onPressed: () {
+                        _updateHealthInfo(bloodController.text, allergiesController.text);
+                        Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
+                    child: const Text('Save'),
+                ),
+            ],
+        ),
+      );
+  }
+
+  Widget _buildHealthInfoTab() {
+      final bloodGroup = _profileData!['blood_group'] ?? 'Not added';
+      final allergies = _profileData!['allergies'] ?? 'None reported';
+      
+      return Column(
+          children: [
+             _buildProfileField('Blood Group', bloodGroup, Icons.bloodtype_outlined),
+             const SizedBox(height: 16),
+             _buildProfileField('Allergies', allergies, Icons.medical_services_outlined),
+             const SizedBox(height: 24),
+             OutlinedButton.icon(
+                 onPressed: () => _showHealthInfoDialog(currentBlood: bloodGroup == 'Not added' ? '' : bloodGroup, currentAllergies: allergies == 'None reported' ? '' : allergies),
+                 icon: const Icon(Icons.edit, size: 18),
+                 label: const Text("Edit Health Info"),
+                 style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
+             ),
+          ],
+      );
   }
 
   Widget _buildEmergencyTab() {
@@ -2373,14 +2546,22 @@ class BookAppointmentScreen extends StatefulWidget {
 class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _facilityController = TextEditingController();
   final TextEditingController _visitTypeController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   
   String? _selectedTime;
-  String? _selectedDoctor; // Replaced manual facility with Doctor selection as per requirement "available doctors from healthworkers table"
+  String? _selectedHospital;
+  String? _selectedDoctor;
+  
+  List<String> _hospitals = [];
+  bool _isLoadingHospitals = false;
+  
   List<String> _doctors = [];
-  bool _isLoadingDoctors = true;
+  bool _isLoadingDoctors = false;
+  
+  List<String> _bookedSlots = [];
+  bool _isLoadingSlots = false;
+  
   bool _isSubmitting = false;
 
   final List<String> _timeSlots = [
@@ -2391,13 +2572,38 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchDoctors();
+    _fetchHospitals();
   }
 
-  Future<void> _fetchDoctors() async {
+  Future<void> _fetchHospitals() async {
+    setState(() => _isLoadingHospitals = true);
     final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/doctors'));
+      final response = await http.get(Uri.parse('$baseUrl/api/hospitals'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _hospitals = data.cast<String>();
+          _isLoadingHospitals = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching hospitals: $e');
+      setState(() => _isLoadingHospitals = false);
+    }
+  }
+
+  Future<void> _fetchDoctors(String hospital) async {
+    setState(() {
+      _isLoadingDoctors = true;
+      _doctors = [];
+      _selectedDoctor = null;
+      _selectedTime = null;
+      _bookedSlots = [];
+    });
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/doctors?hospitalName=$hospital'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
@@ -2408,6 +2614,30 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     } catch (e) {
       print('Error fetching doctors: $e');
       setState(() => _isLoadingDoctors = false);
+    }
+  }
+
+  Future<void> _fetchBookedSlots() async {
+    if (_selectedDoctor == null || _dateController.text.isEmpty) return;
+    
+    setState(() {
+      _isLoadingSlots = true;
+      _bookedSlots = [];
+      _selectedTime = null;
+    });
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/booked-slots?doctorName=${Uri.encodeComponent(_selectedDoctor!)}&date=${_dateController.text}'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _bookedSlots = data.cast<String>();
+          _isLoadingSlots = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching slots: $e');
+      setState(() => _isLoadingSlots = false);
     }
   }
 
@@ -2422,6 +2652,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       setState(() {
         _dateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
+      _fetchBookedSlots();
     }
   }
 
@@ -2439,7 +2670,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             'doctorName': _selectedDoctor ?? 'Assigned Doctor',
             'date': _dateController.text,
             'time': _selectedTime,
-            'facility': _facilityController.text.isEmpty ? 'PHC Ernakulam' : _facilityController.text, // Default if empty
+            'facility': _selectedHospital ?? 'Unknown Facility',
             'visitType': _visitTypeController.text.isEmpty ? 'General Checkup' : _visitTypeController.text,
             'notes': _notesController.text,
           }),
@@ -2450,7 +2681,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Appointment Booked Successfully!')),
             );
-            Navigator.pop(context, true); // Return true to refresh
+            Navigator.pop(context, true);
           }
         } else {
            throw Exception('Failed to book');
@@ -2507,53 +2738,72 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               
               _buildLabel('Select Time'),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: _timeSlots.map((time) {
-                  final isSelected = _selectedTime == time;
-                  return ChoiceChip(
-                    label: Text(time),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() => _selectedTime = selected ? time : null);
-                    },
-                    selectedColor: Colors.blue.withOpacity(0.1),
-                    backgroundColor: Colors.white,
-                    side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade300),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.blue : Colors.black,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  );
-                }).toList(),
-              ),
+              if (_isLoadingSlots)
+                const Center(child: CircularProgressIndicator())
+              else if (_selectedDoctor == null || _dateController.text.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Select Date and Doctor to view available times', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                )
+              else
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: _timeSlots.map((time) {
+                    final isBooked = _bookedSlots.contains(time);
+                    final isSelected = _selectedTime == time;
+                    return ChoiceChip(
+                      label: Text(time),
+                      selected: isSelected && !isBooked,
+                      onSelected: isBooked ? null : (selected) {
+                        setState(() => _selectedTime = selected ? time : null);
+                      },
+                      selectedColor: Colors.blue.withOpacity(0.1),
+                      backgroundColor: isBooked ? Colors.red.shade50 : Colors.white,
+                      side: BorderSide(color: isBooked ? Colors.red.shade300 : (isSelected ? Colors.blue : Colors.grey.shade300)),
+                      labelStyle: TextStyle(
+                        color: isBooked ? Colors.red.shade700 : (isSelected ? Colors.blue : Colors.black),
+                        fontWeight: isSelected && !isBooked ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    );
+                  }).toList(),
+                ),
               const SizedBox(height: 20),
 
-              _buildLabel('Select Facility'),
+              _buildLabel('Select Hospital'),
               const SizedBox(height: 8),
-              // Using doctor list for facility selection as an example of backend integration, 
-              // but requirement says "show only available doctors".
-              // Let's keep facility as a text field for now as per image UI, but maybe pre-fill?
-              TextFormField(
-                 controller: _facilityController,
-                 decoration: _inputDecoration('Enter Facility Name'),
-                 validator: (val) => val!.isEmpty ? 'Required' : null,
-              ),
+              if (_isLoadingHospitals)
+                const Center(child: CircularProgressIndicator())
+              else
+                DropdownButtonFormField<String>(
+                  value: _selectedHospital,
+                  items: _hospitals.map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+                  onChanged: (val) {
+                    setState(() => _selectedHospital = val);
+                    if (val != null) _fetchDoctors(val);
+                  },
+                  decoration: _inputDecoration('Choose a hospital'),
+                  validator: (val) => val == null ? 'Please select a hospital' : null,
+                ),
 
                const SizedBox(height: 20),
-               if (_isLoadingDoctors)
-                 const Center(child: CircularProgressIndicator())
-               else ...[
+               if (_selectedHospital != null) ...[
                  _buildLabel('Select Doctor'),
                  const SizedBox(height: 8),
-                 DropdownButtonFormField<String>(
-                   value: _selectedDoctor,
-                   items: _doctors.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                   onChanged: (val) => setState(() => _selectedDoctor = val),
-                   decoration: _inputDecoration('Choose a doctor'),
-                   validator: (val) => val == null ? 'Please select a doctor' : null,
-                 ),
+                 if (_isLoadingDoctors)
+                   const Center(child: CircularProgressIndicator())
+                 else
+                   DropdownButtonFormField<String>(
+                     value: _selectedDoctor,
+                     items: _doctors.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                     onChanged: (val) {
+                       setState(() => _selectedDoctor = val);
+                       _fetchBookedSlots();
+                     },
+                     decoration: _inputDecoration('Choose a doctor'),
+                     validator: (val) => val == null ? 'Please select a doctor' : null,
+                   ),
+                 const SizedBox(height: 20),
                ],
 
 
