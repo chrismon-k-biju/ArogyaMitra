@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'migrant_worker.dart';
+import 'downloader/downloader.dart';
 
 class HealthcareProviderScreen extends StatefulWidget {
   const HealthcareProviderScreen({super.key});
@@ -28,7 +29,7 @@ class _HealthcareProviderScreenState extends State<HealthcareProviderScreen> {
     if (_idController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
       setState(() => _isLoading = true);
 
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
       final url = Uri.parse('$baseUrl/api/provider-login');
 
       try {
@@ -59,6 +60,7 @@ class _HealthcareProviderScreenState extends State<HealthcareProviderScreen> {
                 builder: (context) => ProviderDashboard(
                   doctorName: name ?? _idController.text,
                   role: _selectedRole,
+                  district: data['district'],
                 ),
               ),
             );
@@ -245,8 +247,9 @@ class _HealthcareProviderScreenState extends State<HealthcareProviderScreen> {
 class ProviderDashboard extends StatefulWidget {
   final String doctorName;
   final String role;
+  final String? district;
 
-  const ProviderDashboard({super.key, required this.doctorName, required this.role});
+  const ProviderDashboard({super.key, required this.doctorName, required this.role, this.district});
 
   @override
   State<ProviderDashboard> createState() => _ProviderDashboardState();
@@ -262,6 +265,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   String _healthId = '';
   String _recordType = 'General Checkup';
   String _description = '';
+  String _treatmentCost = '';
   bool _isSubmittingRecord = false;
 
   final List<String> _recordTypes = [
@@ -272,16 +276,94 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     'Other'
   ];
 
+  bool _isLoadingCirculars = false;
+  List<dynamic> _circulars = [];
+  bool _isLoadingCampPatients = false;
+  List<dynamic> _campPatients = [];
+  bool _isLoadingWorkerClaims = false;
+  List<dynamic> _workerClaims = [];
+
+  Future<void> _fetchWorkerClaims() async {
+    setState(() => _isLoadingWorkerClaims = true);
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/claims'));
+      if (response.statusCode == 200) {
+         if (mounted) setState(() => _workerClaims = jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error fetching claims: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingWorkerClaims = false);
+    }
+  }
+
+  Future<void> _processClaim(int claimId, String status) async {
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/claims/$claimId/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': status, 'reason': status == 'Rejected' ? 'Policy violation' : null}),
+      );
+      if (response.statusCode == 200) {
+         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Claim $status successfully')));
+         _fetchWorkerClaims();
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  Future<void> _fetchCampPatients() async {
+    setState(() => _isLoadingCampPatients = true);
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/camp-patients'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _campPatients = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      print('Error fetching camp patients: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingCampPatients = false);
+    }
+  }
+
+  Future<void> _fetchCirculars() async {
+    setState(() => _isLoadingCirculars = true);
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final districtQuery = widget.district != null ? '?district=${Uri.encodeComponent(widget.district!)}' : '';
+      final response = await http.get(Uri.parse('$baseUrl/api/circulars$districtQuery'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _circulars = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      print('Error fetching circulars: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingCirculars = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _currentDoctorName = widget.doctorName;
     _fetchTodayPatients();
+    _fetchCirculars();
+    if (widget.role == 'doctor') {
+      _fetchCampPatients();
+    }
   }
 
   Future<void> _fetchTodayPatients() async {
     setState(() => _isLoadingPatients = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
     
     // Format today's date
     final now = DateTime.now();
@@ -328,6 +410,8 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
               _buildPublicHealthButton(),
               const SizedBox(height: 20),
             ],
+            _buildDepartmentCirculars(),
+            const SizedBox(height: 20),
             _buildRecentPatients(),
           ],
         ),
@@ -530,6 +614,18 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                     validator: (value) => value == null || value.isEmpty ? 'Please enter description' : null,
                     onSaved: (value) => _description = value!,
                   ),
+                  const SizedBox(height: 20),
+                  const Text('Treatment Cost (₹)', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Optional. Enter cost to auto-generate claim',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onSaved: (value) => _treatmentCost = value ?? '0',
+                  ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
@@ -559,7 +655,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
       _recordFormKey.currentState!.save();
       setState(() => _isSubmittingRecord = true);
 
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
       final now = DateTime.now();
       final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
@@ -577,9 +673,28 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
         );
 
         if (response.statusCode == 201) {
+          // Attempt claim creation if cost > 0
+          double cost = double.tryParse(_treatmentCost) ?? 0;
+          if (cost > 0) {
+            try {
+              await http.post(
+                Uri.parse('$baseUrl/api/claims'),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({
+                  'healthId': _healthId,
+                  'doctorName': widget.doctorName,
+                  'treatmentCost': cost,
+                  'date': todayStr,
+                }),
+              );
+            } catch (e) {
+              print('Claim creation error: $e');
+            }
+          }
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Medical record uploaded successfully', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+              SnackBar(content: Text('Medical record uploaded. ${cost > 0 ? "Claim generated." : ""}', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.green),
             );
             _recordFormKey.currentState!.reset();
             setState(() {
@@ -650,6 +765,87 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     );
   }
 
+  Widget _buildClaimsContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text(
+            'Process Insurance Claims',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        Expanded(
+          child: _isLoadingWorkerClaims
+              ? const Center(child: CircularProgressIndicator())
+              : _workerClaims.where((c) => c['status'] == 'Pending').isEmpty
+                  ? const Center(
+                      child: Text('No pending claims to process', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                    )
+                  : ListView.builder(
+                      itemCount: _workerClaims.where((c) => c['status'] == 'Pending').length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder: (context, index) {
+                        final pendingClaims = _workerClaims.where((c) => c['status'] == 'Pending').toList();
+                        final claim = pendingClaims[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Health ID: ${claim['health_id']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    Text('${claim['date'].toString().split('T')[0]}', style: const TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text('Doctor: ${claim['doctor_name']}'),
+                                Text('Treatment Cost: ₹${claim['treatment_cost']}', style: const TextStyle(color: Color(0xFF1F6EBB), fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: () => _processClaim(claim['id'], 'Rejected'),
+                                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                                        child: const Text('Reject'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _processClaim(claim['id'], 'Approved'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                                        child: const Text('Approve'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCampModeContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -681,6 +877,46 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
               ],
             ),
           ),
+          const SizedBox(height: 30),
+          const Text('Camp Patients', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _isLoadingCampPatients 
+              ? const Center(child: CircularProgressIndicator()) 
+              : _campPatients.isEmpty 
+                  ? const Center(child: Text('No camp patients found', style: TextStyle(color: Colors.grey)))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _campPatients.length,
+                      itemBuilder: (context, index) {
+                        final p = _campPatients[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.green.shade100,
+                              child: const Icon(Icons.person, color: Colors.green),
+                            ),
+                            title: Text(p['name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text('ID: ${p['health_id']} | Age: ${p['age']}'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.note_add_outlined, color: Color(0xFF1F6EBB)),
+                              onPressed: () {
+                                setState(() {
+                                  _selectedIndex = 3;
+                                });
+                              },
+                              tooltip: 'Add Record',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
         ],
       ),
     );
@@ -716,7 +952,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                   if (nameController.text.isEmpty) return;
                   setState(() => isRegistering = true);
                   try {
-                    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+                    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
                     final response = await http.post(
                       Uri.parse('$baseUrl/api/register'),
                       headers: {'Content-Type': 'application/json'},
@@ -734,6 +970,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                     if (response.statusCode == 201) {
                       final data = jsonDecode(response.body);
                       Navigator.pop(ctx);
+                      _fetchCampPatients();
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registered. Health ID: ${data['healthId']}'), duration: const Duration(seconds: 10)));
                     } else {
                       setState(() => isRegistering = false);
@@ -755,7 +992,9 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final List<int> currentMap = widget.role == 'doctor' ? [0, 1, 2, 3, 4] : [0, 3, 4];
+    final List<int> currentMap = widget.role == 'doctor' 
+        ? [0, 1, 2, 3, 4] 
+        : (widget.role == 'health worker' ? [0, 3, 5, 4] : [0, 3, 4]);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -767,11 +1006,13 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                 ? _buildDashboardContent()
                 : _selectedIndex == 1
                     ? _buildPatientsContent()
-                    : _selectedIndex == 3
-                        ? _buildRecordsContent()
-                        : _selectedIndex == 4
-                            ? _buildProfileContent()
-                            : _buildCampModeContent(),
+                    : _selectedIndex == 2
+                        ? _buildCampModeContent()
+                        : _selectedIndex == 3
+                            ? _buildRecordsContent()
+                            : _selectedIndex == 5
+                                ? _buildClaimsContent()
+                                : _buildProfileContent(),
           ),
         ],
       ),
@@ -783,6 +1024,10 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             _selectedIndex = currentMap[index];
             if (_selectedIndex == 1) {
               _fetchTodayPatients();
+            } else if (_selectedIndex == 2) {
+              _fetchCampPatients();
+            } else if (_selectedIndex == 5) {
+              _fetchWorkerClaims();
             }
           });
         },
@@ -796,6 +1041,8 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             const BottomNavigationBarItem(icon: Icon(Icons.holiday_village_outlined), label: 'Camp Mode'),
           ],
           const BottomNavigationBarItem(icon: Icon(Icons.description_outlined), label: 'Records'),
+          if (widget.role == 'health worker')
+            const BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), label: 'Claims'),
           const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
@@ -863,13 +1110,11 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   Widget _buildStatsRow() {
     return Row(
       children: [
-        if (widget.role != 'nurse') ...[
+        if (widget.role == 'doctor') ...[
           _buildStatCard(_todayPatients.length.toString(), 'Patients\nToday'),
           const SizedBox(width: 10),
         ],
         _buildStatCard('0', 'Pending\nReports'),
-        const SizedBox(width: 10),
-        _buildStatCard('0', 'Follow-ups'),
       ],
     );
   }
@@ -1004,7 +1249,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                   setState(() => isSearching = true);
                   
                   try {
-                    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+                    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
                     final response = await http.get(Uri.parse('$baseUrl/api/profile/${searchController.text}'));
                     
                     if (response.statusCode == 200) {
@@ -1154,6 +1399,74 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
       ),
     );
   }
+
+  Widget _buildDepartmentCirculars() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.campaign, color: Colors.orange),
+              SizedBox(width: 8),
+              Text(
+                'Department Circular',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_isLoadingCirculars)
+            const Center(child: CircularProgressIndicator())
+          else if (_circulars.isEmpty)
+            const Text('No recent circulars', style: TextStyle(color: Colors.grey))
+          else
+            ..._circulars.map((circular) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(circular['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text('Date: ${circular['date']} | By: ${circular['publisher_name']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Download'),
+                    onPressed: () {
+                      final content = "CIRCULAR: ${circular['title']}\nDATE: ${circular['date']}\nPUBLISHER: ${circular['publisher_name']}\n\n${circular['content']}";
+                      if (kIsWeb) {
+                        downloadDocument(content, "circular_${circular['id']}.txt");
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloading circular...')));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Download supported on Web only')));
+                      }
+                    },
+                  )
+                ],
+              ),
+            )).toList(),
+        ],
+      ),
+    );
+  }
 }
 
 class ReportAlertScreen extends StatefulWidget {
@@ -1183,7 +1496,7 @@ class _ReportAlertScreenState extends State<ReportAlertScreen> {
   Future<void> _submitAlert() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSubmitting = true);
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
       
       try {
         final response = await http.post(

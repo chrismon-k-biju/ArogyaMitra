@@ -49,7 +49,7 @@ class _PublicHealthScreenState extends State<PublicHealthScreen> {
     });
 
     try {
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
       final response = await http.post(
         Uri.parse('$baseUrl/api/public-health-login'),
         headers: {'Content-Type': 'application/json'},
@@ -62,11 +62,19 @@ class _PublicHealthScreenState extends State<PublicHealthScreen> {
 
       final data = jsonDecode(response.body);
 
+      setState(() {
+        _isLoading = false;
+      });
+
       if (response.statusCode == 200) {
         if (!mounted) return;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const PublicHealthDashboard()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => PublicHealthDashboard(userDistrict: data['district'] ?? _selectedDistrict),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       } else {
         if (!mounted) return;
@@ -75,16 +83,13 @@ class _PublicHealthScreenState extends State<PublicHealthScreen> {
         );
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -292,14 +297,15 @@ class _PublicHealthScreenState extends State<PublicHealthScreen> {
 }
 
 class PublicHealthDashboard extends StatefulWidget {
-  const PublicHealthDashboard({super.key});
+  final String userDistrict;
+  const PublicHealthDashboard({super.key, required this.userDistrict});
 
   @override
   State<PublicHealthDashboard> createState() => _PublicHealthDashboardState();
 }
 
 class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
-  String? _selectedDistrict;
+  late String _selectedDistrict;
   String _activeCases = '0';
   String _vaccinationRate = '0';
   List<dynamic> _activeAlertsList = [];
@@ -308,14 +314,15 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
   @override
   void initState() {
     super.initState();
+    _selectedDistrict = widget.userDistrict;
     _fetchStats();
   }
 
   Future<void> _fetchStats() async {
     setState(() => _isLoading = true);
     try {
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
-      final districtQuery = _selectedDistrict != null ? '?district=${Uri.encodeComponent(_selectedDistrict!)}' : '';
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+      final districtQuery = '?district=${Uri.encodeComponent(_selectedDistrict)}';
       final response = await http.get(Uri.parse('$baseUrl/api/alerts$districtQuery'));
       
       if (response.statusCode == 200) {
@@ -357,34 +364,21 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.white30),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedDistrict,
-                  hint: const Text(
-                    "District",
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  dropdownColor: const Color(0xFF1565C0),
-                  icon: const Icon(Icons.location_on_outlined, color: Colors.white70, size: 20),
-                  isExpanded: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  items: keralaDistricts.map((String district) {
-                    return DropdownMenuItem<String>(
-                      value: district,
-                      child: Text(district),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() => _selectedDistrict = val);
-                    _fetchStats();
-                  },
-                 ),
+              child: Row(
+                children: [
+                   const Icon(Icons.location_on_outlined, color: Colors.white70, size: 20),
+                   const SizedBox(width: 8),
+                   Text(
+                     _selectedDistrict,
+                     style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                   ),
+                ],
               ),
             ),
           ),
@@ -478,6 +472,20 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
                 Expanded(child: _buildActionButton('View Analytics', Icons.show_chart, const Color(0xFF1565C0), _showAnalyticsReport)),
                 const SizedBox(width: 16),
                 Expanded(child: _buildActionButton('Generate Report', Icons.analytics_outlined, Colors.green, _downloadReport)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _buildActionButton('Release Circular', Icons.campaign_outlined, Colors.orange, _showReleaseCircularDialog)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _buildActionButton('Create Provider', Icons.person_add, Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => CreateProviderScreen(district: _selectedDistrict))))),
+                const SizedBox(width: 16),
+                Expanded(child: _buildActionButton('Manage Providers', Icons.manage_accounts, Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageProvidersScreen(district: _selectedDistrict))))),
               ],
             ),
             
@@ -583,11 +591,6 @@ class _PublicHealthDashboardState extends State<PublicHealthDashboard> {
   }
 
   void _showAnalyticsReport() {
-    if (_selectedDistrict == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a district first')));
-      return;
-    }
-    
     String reportText = '''
 **OFFICIAL HEALTH REPORT**
 District: $_selectedDistrict
@@ -628,11 +631,6 @@ Date: ${DateTime.now().toString().split(' ')[0]}
   }
 
   void _downloadReport() {
-    if (_selectedDistrict == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a district first')));
-      return;
-    }
-    
     String reportContent = '''
 =========================================================
             GOVERNMENT OF KERALA            
@@ -665,5 +663,257 @@ Total Vaccinations Administered: $_vaccinationRate
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Download only supported on Web currently')));
     }
+  }
+
+  void _showReleaseCircularDialog() {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController contentController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Release Department Circular'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: contentController,
+                    decoration: const InputDecoration(labelText: 'Content', border: OutlineInputBorder()),
+                    maxLines: 5,
+                  ),
+                  if (isSubmitting) ...[
+                    const SizedBox(height: 16),
+                    const CircularProgressIndicator(),
+                  ]
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: isSubmitting ? null : () async {
+                  if (titleController.text.isEmpty || contentController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+                    return;
+                  }
+                  setState(() => isSubmitting = true);
+                  
+                  try {
+                    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+                    final response = await http.post(
+                      Uri.parse('$baseUrl/api/circulars'),
+                      headers: {'Content-Type': 'application/json'},
+                      body: jsonEncode({
+                        'title': titleController.text,
+                        'content': contentController.text,
+                        'date': DateTime.now().toString().split(' ')[0],
+                        'publisherName': 'Public Health Official - $_selectedDistrict',
+                        'district': _selectedDistrict,
+                      }),
+                    );
+                    
+                    if (response.statusCode == 201) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Circular released successfully!')));
+                    } else {
+                      setState(() => isSubmitting = false);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to release circular')));
+                    }
+                  } catch (e) {
+                    setState(() => isSubmitting = false);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                child: const Text('Release'),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+}
+
+class CreateProviderScreen extends StatefulWidget {
+  final String district;
+  const CreateProviderScreen({super.key, required this.district});
+
+  @override
+  State<CreateProviderScreen> createState() => _CreateProviderScreenState();
+}
+
+class _CreateProviderScreenState extends State<CreateProviderScreen> {
+  final _formKey = GlobalKey<FormState>();
+  String _role = 'Doctor';
+  final _nameController = TextEditingController();
+  final _hospitalController = TextEditingController();
+  final _idController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _submit() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+      try {
+        final response = await http.post(
+          Uri.parse('$baseUrl/api/healthworkers'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'name': _nameController.text,
+            'hospital_name': _hospitalController.text,
+            'username': _idController.text,
+            'password': _passwordController.text,
+            'district': widget.district,
+            'role': _role,
+          }),
+        );
+        if (response.statusCode == 201) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Provider created successfully!')));
+            Navigator.pop(context);
+          }
+        } else {
+          final msg = jsonDecode(response.body)['message'] ?? 'Failed to create';
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        }
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text('Create Provider', style: TextStyle(color: Colors.black)), backgroundColor: Colors.white, iconTheme: const IconThemeData(color: Colors.black)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _role,
+                items: ['Doctor', 'Nurse', 'Health Worker'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                onChanged: (v) => setState(() => _role = v!),
+                decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'Required' : null),
+              const SizedBox(height: 16),
+              TextFormField(controller: _hospitalController, decoration: const InputDecoration(labelText: 'Hospital Name', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'Required' : null),
+              const SizedBox(height: 16),
+              TextFormField(controller: _idController, decoration: const InputDecoration(labelText: 'Login ID', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'Required' : null),
+              const SizedBox(height: 16),
+              TextFormField(controller: _passwordController, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()), obscureText: true, validator: (v) => v!.isEmpty ? 'Required' : null),
+              const SizedBox(height: 32),
+              SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _isLoading ? null : _submit, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0)), child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Create', style: TextStyle(color: Colors.white, fontSize: 16)))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ManageProvidersScreen extends StatefulWidget {
+  final String district;
+  const ManageProvidersScreen({super.key, required this.district});
+
+  @override
+  State<ManageProvidersScreen> createState() => _ManageProvidersScreenState();
+}
+
+class _ManageProvidersScreenState extends State<ManageProvidersScreen> {
+  bool _isLoading = true;
+  List<dynamic> _providers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProviders();
+  }
+
+  Future<void> _fetchProviders() async {
+    setState(() => _isLoading = true);
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/healthworkers?district=${Uri.encodeComponent(widget.district)}'));
+      if (response.statusCode == 200) {
+        setState(() => _providers = jsonDecode(response.body));
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteProvider(String username) async {
+    final String baseUrl = kIsWeb ? 'http://127.0.0.1:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/api/healthworkers/${Uri.encodeComponent(username)}'));
+      if (response.statusCode == 200) {
+        _fetchProviders();
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleted successfully')));
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete')));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text('Manage Providers', style: TextStyle(color: Colors.black)), backgroundColor: Colors.white, iconTheme: const IconThemeData(color: Colors.black)),
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator())
+          : _providers.isEmpty 
+              ? const Center(child: Text('No providers found in this district.'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _providers.length,
+                  itemBuilder: (ctx, i) {
+                    final p = _providers[i];
+                    return Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFFE3F2FD),
+                          child: Icon(
+                            p['role'].toString().toLowerCase() == 'doctor' ? Icons.local_hospital : Icons.medical_services,
+                            color: const Color(0xFF1565C0)
+                          ),
+                        ),
+                        title: Text(p['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('${p['role']} - ${p['hospital_name']}\nID: ${p['username']}'),
+                        isThreeLine: true,
+                        trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _deleteProvider(p['username'])),
+                      ),
+                    );
+                  },
+                ),
+    );
   }
 }

@@ -32,16 +32,15 @@ router.get('/alerts', async (req, res) => {
             queryParams.push(district);
         }
 
-        // Fetch total vaccinations
-        const vacQuery = await pool.query(`SELECT SUM(patients_count) as total FROM health_alerts WHERE ${filterStr} alert_type = 'Vaccination'`, queryParams);
+        // Run all queries concurrently to reduce latency
+        const [vacQuery, disQuery, feedQuery] = await Promise.all([
+            pool.query(`SELECT SUM(patients_count) as total FROM health_alerts WHERE ${filterStr} alert_type = 'Vaccination'`, queryParams),
+            pool.query(`SELECT COUNT(*) as total FROM health_alerts WHERE ${filterStr} alert_type = 'Disease'`, queryParams),
+            pool.query(`SELECT * FROM health_alerts ${filterStr ? 'WHERE ' + filterStr.replace(' AND', '') : ''} ORDER BY created_at DESC`, queryParams)
+        ]);
+
         const totalVaccination = vacQuery.rows[0].total || 0;
-
-        // Fetch total disease alerts
-        const disQuery = await pool.query(`SELECT COUNT(*) as total FROM health_alerts WHERE ${filterStr} alert_type = 'Disease'`, queryParams);
         const totalDisease = disQuery.rows[0].total || 0;
-
-        // Fetch all alerts for feed
-        const feedQuery = await pool.query(`SELECT * FROM health_alerts ${filterStr ? 'WHERE ' + filterStr.replace(' AND', '') : ''} ORDER BY created_at DESC`, queryParams);
         const feed = feedQuery.rows;
 
         res.json({
@@ -52,6 +51,43 @@ router.get('/alerts', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error fetching alerts' });
+    }
+});
+
+// Create new circular
+router.post('/circulars', async (req, res) => {
+    try {
+        const { title, content, date, publisherName, district } = req.body;
+        
+        await pool.query(
+            `INSERT INTO department_circulars (title, content, date, publisher_name, district) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [title, content, date, publisherName, district]
+        );
+        res.status(201).json({ message: 'Circular created successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error creating circular' });
+    }
+});
+
+// Get all circulars
+router.get('/circulars', async (req, res) => {
+    try {
+        const { district } = req.query;
+        let query = 'SELECT * FROM department_circulars';
+        let params = [];
+        if (district && district !== 'All Districts') {
+            query += ' WHERE district = $1';
+            params.push(district);
+        }
+        query += ' ORDER BY id DESC';
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching circulars' });
     }
 });
 

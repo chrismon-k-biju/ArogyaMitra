@@ -24,11 +24,12 @@ router.post('/provider-login', async (req, res) => {
 
         // Check if password matches (Try Bcrypt first, then correct plain text fallback)
         let isMatch = false;
-        try {
-            isMatch = await bcrypt.compare(password, user.password);
-        } catch (e) {
-            // user.password might not be a valid bcrypt hash (e.g. plain text "1234")
-            console.log('[Bcrypt Warning] Likely using plain text password in DB');
+        if (user.password && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$'))) {
+            try {
+                isMatch = await bcrypt.compare(password, user.password);
+            } catch (e) {
+                console.log('[Bcrypt Warning] Failed to compare hash');
+            }
         }
 
         // Fallback: Check plain text if bcrypt failed or didn't match
@@ -46,7 +47,8 @@ router.post('/provider-login', async (req, res) => {
         res.json({
             message: 'Login successful',
             name: user.name,
-            role: user.role
+            role: user.role,
+            district: user.district
         });
 
     } catch (err) {
@@ -79,10 +81,12 @@ router.post('/public-health-login', async (req, res) => {
 
         // Check password (Bcrypt with plain text fallback)
         let isMatch = false;
-        try {
-            isMatch = await bcrypt.compare(password, user.password);
-        } catch (e) {
-            console.log('[Bcrypt Warning] Likely using plain text password in DB');
+        if (user.password && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$'))) {
+            try {
+                isMatch = await bcrypt.compare(password, user.password);
+            } catch (e) {
+                console.log('[Bcrypt Warning] Failed to compare hash');
+            }
         }
 
         if (!isMatch && password === user.password) {

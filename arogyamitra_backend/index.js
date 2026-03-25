@@ -44,6 +44,8 @@ app.use('/api', require('./routes/register'));
 app.use('/api', require('./routes/login'));
 app.use('/api', require('./routes/provider_login'));
 app.use('/api', require('./routes/alerts'));
+app.use('/api', require('./routes/healthworkers'));
+app.use('/api', require('./routes/claims'));
 
 const PORT = 3000;
 app.listen(PORT, () => {

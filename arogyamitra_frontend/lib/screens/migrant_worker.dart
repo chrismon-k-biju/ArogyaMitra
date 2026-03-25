@@ -938,12 +938,30 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   bool _isLoadingRecords = true;
   Map<String, dynamic>? _profileData;
   bool _isLoadingProfile = false;
+  bool _isLoadingClaims = false;
+  List<dynamic> _claims = [];
+
+  Future<void> _fetchClaims() async {
+    setState(() => _isLoadingClaims = true);
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/claims?healthId=${widget.healthId}'));
+      if (response.statusCode == 200) {
+        if (mounted) setState(() => _claims = jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error fetching claims: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingClaims = false);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _fetchAppointments();
     _fetchMedicalRecords();
+    _fetchClaims();
   }
 
   Future<void> _fetchMedicalRecords() async {
@@ -2204,6 +2222,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                         Expanded(child: _buildTabItem(_t('Personal Info', 'व्यक्तिगत जानकारी'), 0)),
                         Expanded(child: _buildTabItem(_t('Emergency', 'आपातकालीन'), 1)),
                         Expanded(child: _buildTabItem(_t('Health Info', 'स्वास्थ्य जानकारी'), 2)),
+                        Expanded(child: _buildTabItem(_t('Insurance', 'बीमा'), 3)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -2270,9 +2289,12 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       } else if (_currentProfileTab == 1) {
           // Emergency
           return _buildEmergencyTab();
-      } else {
+      } else if (_currentProfileTab == 2) {
           // Health Info
            return _buildHealthInfoTab();
+      } else {
+          // Insurance
+          return _buildInsuranceTab();
       }
   }
 
@@ -2363,6 +2385,133 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                  label: const Text("Edit Health Info"),
                  style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
              ),
+          ],
+      );
+  }
+
+  bool _isUpdatingInsurance = false;
+
+  Future<void> _updateInsuranceInfo(String insuranceId, String policyType) async {
+    setState(() => _isUpdatingInsurance = true);
+    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/profile/${widget.healthId}/insurance'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'insurance_id': insuranceId, 'policy_type': policyType}),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+            if (_profileData != null) {
+                _profileData!['insurance_id'] = insuranceId;
+                _profileData!['policy_type'] = policyType;
+            }
+        });
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Insurance info updated')));
+      }
+    } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+       setState(() => _isUpdatingInsurance = false);
+    }
+  }
+
+  void _showInsuranceDialog({String? currentId, String? currentPolicy}) {
+      final TextEditingController idController = TextEditingController(text: currentId);
+      String selectedPolicy = ['Basic', 'Premium'].contains(currentPolicy) ? currentPolicy! : 'Basic';
+      
+      showDialog(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            title: const Text('Update Insurance Info'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: idController,
+                    decoration: const InputDecoration(labelText: 'Insurance ID', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedPolicy,
+                  items: ['Basic', 'Premium'].map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+                  onChanged: (val) => setStateDialog(() => selectedPolicy = val!),
+                  decoration: const InputDecoration(labelText: 'Policy Type', border: OutlineInputBorder()),
+                ),
+              ],
+            ),
+            actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                ElevatedButton(
+                    onPressed: () {
+                        _updateInsuranceInfo(idController.text, selectedPolicy);
+                        Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
+                    child: const Text('Save'),
+                ),
+            ],
+          ),
+        ),
+      );
+  }
+
+  Widget _buildInsuranceTab() {
+      final insuranceId = _profileData!['insurance_id'] ?? 'Not added';
+      final policyType = _profileData!['policy_type'] ?? 'None';
+      
+      return Column(
+          children: [
+             _buildProfileField('Insurance ID', insuranceId, Icons.credit_card),
+             const SizedBox(height: 16),
+             _buildProfileField('Policy Type', policyType, Icons.verified_user_outlined),
+             const SizedBox(height: 24),
+             if (_isUpdatingInsurance) const CircularProgressIndicator()
+             else OutlinedButton.icon(
+                 onPressed: () => _showInsuranceDialog(currentId: insuranceId == 'Not added' ? '' : insuranceId, currentPolicy: policyType == 'None' ? '' : policyType),
+                 icon: const Icon(Icons.edit, size: 18),
+                 label: const Text("Edit Insurance Info"),
+                 style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
+             ),
+             const SizedBox(height: 32),
+             const Text('My Claims', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+             const SizedBox(height: 16),
+             _isLoadingClaims 
+                ? const CircularProgressIndicator()
+                : _claims.isEmpty 
+                    ? const Text('No claims found', style: TextStyle(color: Colors.grey))
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _claims.length,
+                        itemBuilder: (ctx, i) {
+                          final c = _claims[i];
+                          final statusColor = c['status'] == 'Approved' ? Colors.green : (c['status'] == 'Rejected' ? Colors.red : Colors.orange);
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            color: Colors.grey.shade50,
+                            elevation: 0,
+                            child: ListTile(
+                              title: Text('Dr. ${c['doctor_name']} - ${c['date'].toString().split('T')[0]}'),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Treatment Cost: ₹${c['treatment_cost']}'),
+                                  if (c['reason'] != null) Text('Reason: ${c['reason']}', style: const TextStyle(color: Colors.red)),
+                                  if (c['approved_amount'] != null) Text('Approved: ₹${c['approved_amount']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              trailing: Chip(
+                                label: Text(c['status'], style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                backgroundColor: statusColor,
+                                side: BorderSide.none,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ],
       );
   }

@@ -17,7 +17,7 @@ router.post('/register', async (req, res) => {
       password
     } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 4);
     const healthId = `AM-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
     const result = await pool.query(
@@ -99,6 +99,39 @@ router.put('/profile/:healthId/emergency', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error updating emergency number' });
+  }
+});
+
+router.get('/camp-patients', async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM registrations WHERE LOWER(state) = 'camp' OR LOWER(district) = 'camp' ORDER BY id DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching camp patients' });
+  }
+});
+
+router.put('/profile/:healthId/insurance', async (req, res) => {
+  try {
+    const { healthId } = req.params;
+    const { insurance_id, policy_type } = req.body;
+
+    const result = await pool.query(
+      'UPDATE registrations SET insurance_id = $1, policy_type = $2 WHERE health_id = $3 RETURNING *',
+      [insurance_id, policy_type, healthId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Insurance info updated successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating insurance info' });
   }
 });
 
