@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-
 bool _isHindiSelected = false;
 
 String _t(String en, String hi) {
@@ -43,7 +42,10 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     IconButton(
@@ -57,7 +59,11 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
               const SizedBox(height: 20),
               Text(
                 _t('ArogyaMitra', 'आरोग्यमित्र'),
-                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 _t('Your Health Companion', 'आपका स्वास्थ्य साथी'),
@@ -73,32 +79,46 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   itemCount: _languages.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final isSelected = _selectedIndex == index;
                     return GestureDetector(
                       onTap: () => setState(() => _selectedIndex = index),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
-                          border: isSelected ? null : Border.all(color: Colors.white30),
+                          border: isSelected
+                              ? null
+                              : Border.all(color: Colors.white30),
                         ),
                         child: Row(
                           children: [
-                            Text(_languages[index]['flag'], style: const TextStyle(fontSize: 20)),
+                            Text(
+                              _languages[index]['flag'],
+                              style: const TextStyle(fontSize: 20),
+                            ),
                             const SizedBox(width: 16),
                             Text(
                               _languages[index]['name'],
                               style: TextStyle(
-                                color: isSelected ? const Color(0xFF1F6EBB) : Colors.white,
+                                color: isSelected
+                                    ? const Color(0xFF1F6EBB)
+                                    : Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             const Spacer(),
-                            if (isSelected) const Icon(Icons.check, color: Color(0xFF1F6EBB)),
+                            if (isSelected)
+                              const Icon(Icons.check, color: Color(0xFF1F6EBB)),
                           ],
                         ),
                       ),
@@ -116,20 +136,30 @@ class _MigrantWorkerScreenState extends State<MigrantWorkerScreen> {
                       _isHindiSelected = _selectedIndex == 1;
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const RegistrationScreen(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xFF1F6EBB),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Text(_t('Get Started', 'शुरू करें'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                         const SizedBox(width: 8),
-                         const Icon(Icons.arrow_forward),
+                        Text(
+                          _t('Get Started', 'शुरू करें'),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward),
                       ],
                     ),
                   ),
@@ -152,7 +182,7 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -168,9 +198,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _states = [
-    'Kerala', 'Tamil Nadu', 'Karnataka', 'Andhra Pradesh', 
-    'Telangana', 'Maharashtra', 'Delhi', 'Uttar Pradesh', 
-    'Bihar', 'West Bengal', 'Odisha', 'Rajasthan'
+    'Kerala',
+    'Tamil Nadu',
+    'Karnataka',
+    'Andhra Pradesh',
+    'Telangana',
+    'Maharashtra',
+    'Delhi',
+    'Uttar Pradesh',
+    'Bihar',
+    'West Bengal',
+    'Odisha',
+    'Rajasthan',
   ]; // Add more as needed
 
   @override
@@ -210,7 +249,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -229,14 +271,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             // Assuming Indian context from previous file content
-                            child: const Center(child: Text('+91', style: TextStyle(fontSize: 16))), 
+                            child: const Center(
+                              child: Text(
+                                '+91',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
-                              decoration: _inputDecoration('Enter your phone number'),
+                              decoration: _inputDecoration(
+                                'Enter your phone number',
+                              ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter phone number';
@@ -275,7 +324,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildLabel('Age', Icons.calendar_today_outlined),
+                                _buildLabel(
+                                  'Age',
+                                  Icons.calendar_today_outlined,
+                                ),
                                 const SizedBox(height: 8),
                                 TextFormField(
                                   controller: _ageController,
@@ -301,9 +353,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   child: Text(
                                     'Gender',
                                     style: TextStyle(
-                                      fontSize: 14, 
+                                      fontSize: 14,
                                       color: Colors.black87,
-                                      fontWeight: FontWeight.w500
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -315,10 +367,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       child: Text(gender),
                                     );
                                   }).toList(),
-                                  onChanged: (val) => setState(() => _selectedGender = val),
+                                  onChanged: (val) =>
+                                      setState(() => _selectedGender = val),
                                   decoration: _inputDecoration(''),
                                   icon: const Icon(Icons.keyboard_arrow_down),
-                                  validator: (value) => value == null ? 'Required' : null,
+                                  validator: (value) =>
+                                      value == null ? 'Required' : null,
                                 ),
                               ],
                             ),
@@ -328,33 +382,49 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(height: 20),
 
                       // State of Origin Field
-                      _buildLabel(_t('State of Origin', 'मूल राज्य'), Icons.location_on_outlined),
+                      _buildLabel(
+                        _t('State of Origin', 'मूल राज्य'),
+                        Icons.location_on_outlined,
+                      ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: _selectedState,
                         items: _states.map((String state) {
                           return DropdownMenuItem(
                             value: state,
-                            child: Text(_t(state, state)), // Keep english state names or add maps if needed
+                            child: Text(
+                              _t(state, state),
+                            ), // Keep english state names or add maps if needed
                           );
                         }).toList(),
-                        onChanged: (val) => setState(() => _selectedState = val),
+                        onChanged: (val) =>
+                            setState(() => _selectedState = val),
                         decoration: _inputDecoration(''),
                         icon: const Icon(Icons.keyboard_arrow_down),
-                        validator: (value) => value == null ? _t('Please select state', 'कृपया राज्य चुनें') : null,
+                        validator: (value) => value == null
+                            ? _t('Please select state', 'कृपया राज्य चुनें')
+                            : null,
                       ),
                       const SizedBox(height: 20),
 
                       // District Field
-                      _buildLabel(_t('District of Origin', 'मूल जिला'), Icons.location_city_outlined),
+                      _buildLabel(
+                        _t('District of Origin in Kerala', 'मूल जिला'),
+                        Icons.location_city_outlined,
+                      ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _districtController,
                         textCapitalization: TextCapitalization.words,
-                        decoration: _inputDecoration(_t('Enter your district', 'अपना जिला दर्ज करें')),
+                        decoration: _inputDecoration(
+                          _t('Enter your district', 'अपना जिला दर्ज करें'),
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return _t('Please enter district', 'कृपया जिला दर्ज करें');
+                            return _t(
+                              'Please enter district',
+                              'कृपया जिला दर्ज करें',
+                            );
                           }
                           return null;
                         },
@@ -362,12 +432,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(height: 20),
 
                       // Occupation Field
-                      _buildLabel(_t('Occupation', 'व्यवसाय'), Icons.work_outline),
+                      _buildLabel(
+                        _t('Occupation', 'व्यवसाय'),
+                        Icons.work_outline,
+                      ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _occupationController,
                         textCapitalization: TextCapitalization.words,
-                        decoration: _inputDecoration('e.g., Construction Worker, Factory Worker'),
+                        decoration: _inputDecoration(
+                          'e.g., Construction Worker, Factory Worker',
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter occupation';
@@ -383,7 +458,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: _inputDecoration('Start creating a secure password'),
+                        decoration: _inputDecoration(
+                          'Start creating a secure password',
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please create a password';
@@ -400,7 +477,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
-            
 
             // Link to Login
             Padding(
@@ -414,9 +490,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                       Navigator.push(
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MigrantLoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const MigrantLoginScreen(),
+                        ),
                       );
                     },
                     child: const Text(
@@ -448,7 +526,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     backgroundColor: const Color(0xFF1F6EBB),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), 
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
                   ),
@@ -476,7 +554,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _registerUser() async {
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     final url = Uri.parse('$baseUrl/api/register');
     try {
       final response = await http.post(
@@ -499,7 +579,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         final healthId = data['healthId'];
 
         if (mounted) {
-           Navigator.push(
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => HealthIDScreen(
@@ -518,9 +598,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -555,9 +635,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Color(0xFF1F6EBB)),
       ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       fillColor: Colors.white,
       filled: true,
     );
@@ -638,7 +716,12 @@ class HealthIDScreen extends StatelessWidget {
                 text: TextSpan(
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                   children: [
-                    TextSpan(text: _t('Save this QR code for ', 'इस QR कोड को सहेजें ')),
+                    TextSpan(
+                      text: _t(
+                        'Save this QR code for ',
+                        'इस QR कोड को सहेजें ',
+                      ),
+                    ),
                     TextSpan(
                       text: _t('quick access', 'त्वरित पहुँच के लिए'),
                       style: TextStyle(
@@ -657,17 +740,17 @@ class HealthIDScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
+                      Navigator.pop(context);
                     } else {
-                        Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => MigrantWorkerDashboard(
+                          builder: (context) => MigrantWorkerDashboard(
                             healthId: healthId,
                             name: name ?? 'User',
-                            ),
+                          ),
                         ),
-                        );
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -679,7 +762,9 @@ class HealthIDScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    Navigator.canPop(context) ? _t('Back to Dashboard', 'डैशबोर्ड पर वापस जाएं') : _t('Continue to Dashboard', 'डैशबोर्ड पर आगे बढ़ें'),
+                    Navigator.canPop(context)
+                        ? _t('Back to Dashboard', 'डैशबोर्ड पर वापस जाएं')
+                        : _t('Continue to Dashboard', 'डैशबोर्ड पर आगे बढ़ें'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -719,8 +804,10 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+
+      final String baseUrl = kIsWeb
+          ? 'http://localhost:3000'
+          : 'http://10.0.2.2:3000';
       final url = Uri.parse('$baseUrl/api/login');
       try {
         final response = await http.post(
@@ -731,15 +818,15 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
             'password': _passwordController.text,
           }),
         );
-        
+
         setState(() => _isLoading = false);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           final healthId = data['healthId']; // Expected from backend
-          
+
           if (mounted) {
-             Navigator.pushReplacement(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => MigrantWorkerDashboard(
@@ -750,14 +837,16 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
             );
           }
         } else {
-           if (mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(
-                content: Text('Invalid Phone Numer or Password'), // UI message updated
+              const SnackBar(
+                content: Text(
+                  'Invalid Phone Numer or Password',
+                ), // UI message updated
                 backgroundColor: Colors.red,
               ),
             );
-           }
+          }
         }
       } catch (e) {
         setState(() => _isLoading = false);
@@ -813,20 +902,23 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _t('Please sign in to continue', 'जारी रखने के लिए कृपया साइन इन करें'),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+                  _t(
+                    'Please sign in to continue',
+                    'जारी रखने के लिए कृपया साइन इन करें',
                   ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
-                
+
                 // Phone Number Field (Replaced Name)
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration(_t('Enter your phone number', 'अपना फ़ोन नंबर दर्ज करें'), Icons.phone_outlined),
+                  decoration: _inputDecoration(
+                    _t('Enter your phone number', 'अपना फ़ोन नंबर दर्ज करें'),
+                    Icons.phone_outlined,
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
@@ -840,7 +932,10 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: _inputDecoration(_t('Enter password', 'पासवर्ड दर्ज करें'), Icons.lock_outline),
+                  decoration: _inputDecoration(
+                    _t('Enter password', 'पासवर्ड दर्ज करें'),
+                    Icons.lock_outline,
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -863,19 +958,22 @@ class _MigrantLoginScreenState extends State<MigrantLoginScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: _isLoading 
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : Text(
-                          _t('Login', 'लॉगिन'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            _t('Login', 'लॉगिन'),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
                   ),
                 ),
               ],
@@ -919,8 +1017,8 @@ class MigrantWorkerDashboard extends StatefulWidget {
   final String name;
 
   const MigrantWorkerDashboard({
-    super.key, 
-    required this.healthId, 
+    super.key,
+    required this.healthId,
     required this.name,
   });
 
@@ -943,9 +1041,13 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
 
   Future<void> _fetchClaims() async {
     setState(() => _isLoadingClaims = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/claims?healthId=${widget.healthId}'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/claims?healthId=${widget.healthId}'),
+      );
       if (response.statusCode == 200) {
         if (mounted) setState(() => _claims = jsonDecode(response.body));
       }
@@ -965,9 +1067,13 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   }
 
   Future<void> _fetchMedicalRecords() async {
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/medical-records/${widget.healthId}'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/medical-records/${widget.healthId}'),
+      );
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -987,9 +1093,13 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   }
 
   Future<void> _fetchAppointments() async {
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/appointments/${widget.healthId}'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/appointments/${widget.healthId}'),
+      );
       if (response.statusCode == 200) {
         if (mounted) {
           final List<dynamic> allAppointments = jsonDecode(response.body);
@@ -1021,9 +1131,13 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
 
   Future<void> _fetchProfileDetails() async {
     setState(() => _isLoadingProfile = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/profile/${widget.healthId}'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/profile/${widget.healthId}'),
+      );
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -1038,18 +1152,22 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       print('Error fetching profile: $e');
       if (mounted) {
         setState(() => _isLoadingProfile = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading profile: $e')));
       }
     }
   }
 
   Future<void> _deleteAppointment(int id) async {
     print('Attempting to delete appointment with ID: $id'); // Debug print
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.delete(Uri.parse('$baseUrl/api/delete-appointment/$id'));
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/delete-appointment/$id'),
+      );
       print('Delete response status: ${response.statusCode}'); // Debug print
       print('Delete response body: ${response.body}'); // Debug print
 
@@ -1085,14 +1203,19 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Cancel Appointment"),
-          content: const Text("Are you sure you want to cancel this appointment? This action cannot be undone."),
+          content: const Text(
+            "Are you sure you want to cancel this appointment? This action cannot be undone.",
+          ),
           actions: [
             TextButton(
               child: const Text("No"),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text("Yes, Cancel", style: TextStyle(color: Colors.red)),
+              child: const Text(
+                "Yes, Cancel",
+                style: TextStyle(color: Colors.red),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteAppointment(id);
@@ -1125,23 +1248,29 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
               ),
             ),
           ),
-          
+
           // Content
           SafeArea(
             child: Column(
               children: [
                 // Top Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                       Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             _t('Welcome back,', 'वापसी पर स्वागत है,'),
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -1180,20 +1309,28 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
 
                 // Main Content Switching
                 Expanded(
-                  child: _selectedIndex == 0 
-                      ? _buildHomeContent() 
-                      : _selectedIndex == 1 // Records Tab
-                          ? _buildRecordsContent()
-                          : _selectedIndex == 2 // Appointments Tab
-                              ? _buildAppointmentsContent()
-                              : _selectedIndex == 3 // Profile Tab
-                                  ? _buildProfileContent()
-                                  : Center(child: Text("Coming Soon", style: TextStyle(color: Colors.white))),
+                  child: _selectedIndex == 0
+                      ? _buildHomeContent()
+                      : _selectedIndex ==
+                            1 // Records Tab
+                      ? _buildRecordsContent()
+                      : _selectedIndex ==
+                            2 // Appointments Tab
+                      ? _buildAppointmentsContent()
+                      : _selectedIndex ==
+                            3 // Profile Tab
+                      ? _buildProfileContent()
+                      : Center(
+                          child: Text(
+                            "Coming Soon",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -1218,10 +1355,22 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, Icons.home_outlined, _t('Home', 'होम')),
-                _buildNavItem(1, Icons.description_outlined, _t('Records', 'रिकॉर्ड्स')),
+                _buildNavItem(
+                  1,
+                  Icons.description_outlined,
+                  _t('Records', 'रिकॉर्ड्स'),
+                ),
                 const SizedBox(width: 48), // Space for FAB
-                _buildNavItem(2, Icons.calendar_today_outlined, _t('Appointments', 'अपॉइंटमेंट्स')),
-                _buildNavItem(3, Icons.person_outline, _t('Profile', 'प्रोफ़ाइल')),
+                _buildNavItem(
+                  2,
+                  Icons.calendar_today_outlined,
+                  _t('Appointments', 'अपॉइंटमेंट्स'),
+                ),
+                _buildNavItem(
+                  3,
+                  Icons.person_outline,
+                  _t('Profile', 'प्रोफ़ाइल'),
+                ),
               ],
             ),
           ),
@@ -1247,7 +1396,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
         ),
         child: FloatingActionButton(
           onPressed: () {
-             Navigator.push(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => HealthIDScreen(
@@ -1259,7 +1408,11 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
-          child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 30),
+          child: const Icon(
+            Icons.qr_code_scanner,
+            color: Colors.white,
+            size: 30,
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -1295,7 +1448,11 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.qr_code, color: Color(0xFF1F6EBB), size: 32),
+                  child: const Icon(
+                    Icons.qr_code,
+                    color: Color(0xFF1F6EBB),
+                    size: 32,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -1304,12 +1461,15 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                     children: [
                       Text(
                         _t('Your Health ID', 'अपनी हेल्थ आईडी'),
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.healthId.length > 12 
-                            ? '${widget.healthId.substring(0, 8)}-...' 
+                        widget.healthId.length > 12
+                            ? '${widget.healthId.substring(0, 8)}-...'
                             : widget.healthId,
                         style: const TextStyle(
                           color: Colors.white,
@@ -1323,9 +1483,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 30),
-          
+
           // Stats Row
           Row(
             children: [
@@ -1354,48 +1514,50 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Next Appointment
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               _buildSectionHeader(_t('Next Appointment', 'अगला अपॉइंटमेंट')),
-               GestureDetector(
-                 onTap: () => setState(() {
-                    _selectedIndex = 2;
-                    _fetchAppointments();
-                 }), // Switch to Appointments tab
-                 child: Text(
-                   _t('View All', 'सभी देखें'),
-                   style: const TextStyle(
-                     color: Color(0xFF1F6EBB),
-                     fontWeight: FontWeight.w600,
-                     fontSize: 14,
-                   ),
-                 ),
-               ),
+              _buildSectionHeader(_t('Next Appointment', 'अगला अपॉइंटमेंट')),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _selectedIndex = 2;
+                  _fetchAppointments();
+                }), // Switch to Appointments tab
+                child: Text(
+                  _t('View All', 'सभी देखें'),
+                  style: const TextStyle(
+                    color: Color(0xFF1F6EBB),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           _buildNextAppointmentCard(nextAppointment),
-          
+
           const SizedBox(height: 24),
-          
+
           // Recent Health Activity
-           Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               _buildSectionHeader(_t('Recent Health Activity', 'हालिया स्वास्थ्य गतिविधि')),
-               Text(
-                 _t('View All', 'सभी देखें'),
-                 style: const TextStyle(
-                   color: Color(0xFF1F6EBB),
-                   fontWeight: FontWeight.w600,
-                   fontSize: 14,
-                 ),
-               ),
+              _buildSectionHeader(
+                _t('Recent Health Activity', 'हालिया स्वास्थ्य गतिविधि'),
+              ),
+              Text(
+                _t('View All', 'सभी देखें'),
+                style: const TextStyle(
+                  color: Color(0xFF1F6EBB),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -1408,7 +1570,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           Container(
             padding: const EdgeInsets.all(20),
             width: double.infinity,
-             decoration: BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -1434,21 +1596,30 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
 
   Widget _buildRecentActivityList() {
     List<Map<String, dynamic>> activities = [];
-    
+
     for (var appt in _appointments) {
       activities.add({
-        'title': _t('Appointment: ${appt['visit_type'] ?? 'Visit'}', 'अपॉइंटमेंट: ${appt['visit_type'] ?? 'विजिट'}'),
-        'subtitle': _t('${appt['date']} with Dr. ${appt['doctor_name']}', '${appt['date']} डॉ. ${appt['doctor_name']} के साथ'),
+        'title': _t(
+          'Appointment: ${appt['visit_type'] ?? 'Visit'}',
+          'अपॉइंटमेंट: ${appt['visit_type'] ?? 'विजिट'}',
+        ),
+        'subtitle': _t(
+          '${appt['date']} with Dr. ${appt['doctor_name']}',
+          '${appt['date']} डॉ. ${appt['doctor_name']} के साथ',
+        ),
         'date': appt['date'],
         'icon': Icons.calendar_today,
         'color': Colors.blue,
       });
     }
-    
+
     for (var record in _medicalRecords) {
       activities.add({
         'title': _t('Medical Record Added', 'मेडिकल रिकॉर्ड जोड़ा गया'),
-        'subtitle': _t('${record['record_type']} by Dr. ${record['doctor_name']}', '${record['record_type']} डॉ. ${record['doctor_name']} द्वारा'),
+        'subtitle': _t(
+          '${record['record_type']} by Dr. ${record['doctor_name']}',
+          '${record['record_type']} डॉ. ${record['doctor_name']} द्वारा',
+        ),
         'date': record['date'],
         'icon': Icons.description,
         'color': Colors.green,
@@ -1463,53 +1634,83 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Center(
-          child: Text(_t('No recent activity', 'कोई हालिया गतिविधि नहीं'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          child: Text(
+            _t('No recent activity', 'कोई हालिया गतिविधि नहीं'),
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+          ),
         ),
       );
     }
 
     // Sort by date descending (simplified string sort)
     activities.sort((a, b) => (b['date'] ?? '').compareTo(a['date'] ?? ''));
-    
+
     // Take top 3
     final recent = activities.take(3).toList();
 
     return Column(
-      children: recent.map((act) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: act['color'].withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(act['icon'], color: act['color'], size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      children: recent
+          .map(
+            (act) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
                 children: [
-                   Text(act['title'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                   const SizedBox(height: 4),
-                   Text(act['subtitle'], style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: act['color'].withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(act['icon'], color: act['color'], size: 20),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          act['title'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          act['subtitle'],
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      )).toList(),
+          )
+          .toList(),
     );
   }
 
@@ -1546,90 +1747,109 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
             child: _isLoadingRecords
                 ? const Center(child: CircularProgressIndicator())
                 : _medicalRecords.isEmpty
-                    ? Center(
-                        child: Text(
-                          _t('No medical records found', 'कोई मेडिकल रिकॉर्ड नहीं मिला'),
-                          style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ? Center(
+                    child: Text(
+                      _t(
+                        'No medical records found',
+                        'कोई मेडिकल रिकॉर्ड नहीं मिला',
+                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: _medicalRecords.length,
+                    itemBuilder: (context, index) {
+                      final record = _medicalRecords[index];
+                      // Convert timestamp to a more readable format if needed or just use date
+                      final dateText = record['date'] != null
+                          ? record['date'].toString().split('T')[0]
+                          : 'Unknown Date';
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(20),
-                        itemCount: _medicalRecords.length,
-                        itemBuilder: (context, index) {
-                          final record = _medicalRecords[index];
-                          // Convert timestamp to a more readable format if needed or just use date
-                          final dateText = record['date'] != null ? record['date'].toString().split('T')[0] : 'Unknown Date';
-                          
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF1F6EBB).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          record['record_type'] ?? 'Record',
-                                          style: const TextStyle(
-                                            color: Color(0xFF1F6EBB),
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF1F6EBB,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      record['record_type'] ?? 'Record',
+                                      style: const TextStyle(
+                                        color: Color(0xFF1F6EBB),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
                                       ),
-                                      Text(
-                                        dateText,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    record['description'] ?? _t('No description', 'कोई विवरण नहीं'),
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black87,
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.person, size: 16, color: Colors.grey),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Dr. ${record['doctor_name'] ?? 'Unknown'}',
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    dateText,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                              const SizedBox(height: 16),
+                              Text(
+                                record['description'] ??
+                                    _t('No description', 'कोई विवरण नहीं'),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFEEEEEE),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Dr. ${record['doctor_name'] ?? 'Unknown'}',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],
@@ -1673,15 +1893,20 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF1F6EBB),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        
+
         // List area
         Expanded(
           child: Container(
@@ -1693,159 +1918,202 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                 topRight: Radius.circular(30),
               ),
             ),
-            child: _isLoadingAppointments 
+            child: _isLoadingAppointments
                 ? const Center(child: CircularProgressIndicator())
                 : _appointments.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.shade300),
-                            const SizedBox(height: 16),
-                            Text(
-                              _t('No appointments yet', 'अभी तक कोई अपॉइंटमेंट नहीं'),
-                              style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 64,
+                          color: Colors.grey.shade300,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _t(
+                            'No appointments yet',
+                            'अभी तक कोई अपॉइंटमेंट नहीं',
+                          ),
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: _appointments.length,
+                    itemBuilder: (context, index) {
+                      final appt = _appointments[index];
+                      // Format Date
+                      String dateStr = appt['date'] ?? '';
+                      try {
+                        DateTime date = DateTime.parse(dateStr);
+                        dateStr = "${date.day}-${date.month}-${date.year}";
+                      } catch (e) {
+                        dateStr = dateStr;
+                      }
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(20),
-                        itemCount: _appointments.length,
-                        itemBuilder: (context, index) {
-                          final appt = _appointments[index];
-                          // Format Date
-                          String dateStr = appt['date'] ?? '';
-                          try {
-                              DateTime date = DateTime.parse(dateStr);
-                              dateStr = "${date.day}-${date.month}-${date.year}"; 
-                          } catch (e) {
-                              dateStr = dateStr;
-                          }
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE3F2FD),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        appt['visit_type'] ?? 'Visit',
-                                        style: const TextStyle(
-                                          color: Color(0xFF1976D2),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE3F2FD),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    appt['visit_type'] ?? 'Visit',
+                                    style: const TextStyle(
+                                      color: Color(0xFF1976D2),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: (appt['status'] == 'Scheduled') 
-                                            ? const Color(0xFFE8F5E9) 
-                                            : Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        appt['status'] ?? 'Scheduled',
-                                        style: TextStyle(
-                                          color: (appt['status'] == 'Scheduled') 
-                                              ? const Color(0xFF388E3C) 
-                                              : Colors.grey.shade600,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    // Delete Button
-                                    IconButton( // Added delete button
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                      onPressed: () => _showDeleteConfirmation(appt['id']),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(Icons.person, color: Color(0xFF1F6EBB)),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: (appt['status'] == 'Scheduled')
+                                        ? const Color(0xFFE8F5E9)
+                                        : Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    appt['status'] ?? 'Scheduled',
+                                    style: TextStyle(
+                                      color: (appt['status'] == 'Scheduled')
+                                          ? const Color(0xFF388E3C)
+                                          : Colors.grey.shade600,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            appt['doctor_name'] ?? 'Doctor',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            appt['facility'] ?? 'Facility',
-                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                const SizedBox(height: 16),
-                                const Divider(),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade500),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      dateStr,
-                                      style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-                                    ),
-                                    const SizedBox(width: 24),
-                                    Icon(Icons.access_time, size: 16, color: Colors.grey.shade500),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      appt['time'] ?? '',
-                                      style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-                                    ),
-                                  ],
+                                // Delete Button
+                                IconButton(
+                                  // Added delete button
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  onPressed: () =>
+                                      _showDeleteConfirmation(appt['id']),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
+
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Color(0xFF1F6EBB),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        appt['doctor_name'] ?? 'Doctor',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        appt['facility'] ?? 'Facility',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  size: 16,
+                                  color: Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  dateStr,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                                Icon(
+                                  Icons.access_time,
+                                  size: 16,
+                                  color: Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  appt['time'] ?? '',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],
@@ -1863,31 +2131,33 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Center(
-          child: Text(_t("No upcoming appointments", "कोई आगामी अपॉइंटमेंट नहीं")),
+          child: Text(
+            _t("No upcoming appointments", "कोई आगामी अपॉइंटमेंट नहीं"),
+          ),
         ),
       );
     }
-    
+
     // Parse date for display
     String dateStr = appointment['date'] ?? '';
     try {
-        DateTime date = DateTime.parse(dateStr);
-        // Simple manual format or just use cleaned string
-        dateStr = "${date.day}/${date.month}";
-    } catch(e) {}
+      DateTime date = DateTime.parse(dateStr);
+      // Simple manual format or just use cleaned string
+      dateStr = "${date.day}/${date.month}";
+    } catch (e) {}
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-         boxShadow: [
-             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1960,7 +2230,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-             BoxShadow(
+            BoxShadow(
               color: Colors.black.withOpacity(0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
@@ -2013,10 +2283,6 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
     );
   }
 
-
-
-
-
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
     return GestureDetector(
@@ -2049,9 +2315,12 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       ),
     );
   }
+
   Future<void> _updateEmergencyNumber(String? number) async {
     setState(() => _isUpdatingEmergency = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/api/profile/${widget.healthId}/emergency'),
@@ -2062,13 +2331,19 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       if (response.statusCode == 200) {
         // Update local profile data
         setState(() {
-            if (_profileData != null) {
-                _profileData!['emergency_no'] = number;
-            }
+          if (_profileData != null) {
+            _profileData!['emergency_no'] = number;
+          }
         });
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(number == null ? 'Emergency number removed' : 'Emergency number updated')),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                number == null
+                    ? 'Emergency number removed'
+                    : 'Emergency number updated',
+              ),
+            ),
           );
         }
       } else {
@@ -2076,61 +2351,76 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       }
     } catch (e) {
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
-       setState(() => _isUpdatingEmergency = false);
+      setState(() => _isUpdatingEmergency = false);
     }
   }
 
   void _showEmergencyDialog({String? currentNumber}) {
-      final TextEditingController controller = TextEditingController(text: currentNumber);
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-            title: Text(currentNumber == null ? 'Add Emergency Number' : 'Edit Emergency Number'),
-            content: TextField(
-                controller: controller,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                    labelText: 'Emergency Contact Number',
-                    hintText: 'Enter 10-digit number',
-                    border: OutlineInputBorder(),
-                ),
-            ),
-            actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                        if (controller.text.isNotEmpty) {
-                            _updateEmergencyNumber(controller.text);
-                            Navigator.pop(ctx);
-                        }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
-                    child: const Text('Save'),
-                ),
-            ],
+    final TextEditingController controller = TextEditingController(
+      text: currentNumber,
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          currentNumber == null
+              ? 'Add Emergency Number'
+              : 'Edit Emergency Number',
         ),
-      );
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.phone,
+          decoration: const InputDecoration(
+            labelText: 'Emergency Contact Number',
+            hintText: 'Enter 10-digit number',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                _updateEmergencyNumber(controller.text);
+                Navigator.pop(ctx);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1F6EBB),
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildProfileContent() {
     if (_profileData == null && !_isLoadingProfile) {
-       _fetchProfileDetails();
+      _fetchProfileDetails();
     }
 
     if (_isLoadingProfile) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
 
     if (_profileData == null) {
-      return const Center(child: Text("Failed to load profile", style: TextStyle(color: Colors.white)));
+      return const Center(
+        child: Text(
+          "Failed to load profile",
+          style: TextStyle(color: Colors.white),
+        ),
+      );
     }
 
     return Container(
@@ -2150,7 +2440,10 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
           children: [
             // Header with Back Button and Edit Icon (Visual only as per request)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -2175,7 +2468,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
               ),
             ),
             const Divider(height: 1),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
@@ -2190,10 +2483,14 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                         color: Color(0xFF00897B),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.person_outline, size: 50, color: Colors.white),
+                      child: const Icon(
+                        Icons.person_outline,
+                        size: 50,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Name
                     Text(
                       _profileData!['name'] ?? 'User',
@@ -2204,7 +2501,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Health ID
                     Text(
                       'Health ID: ${_profileData!['health_id'] ?? widget.healthId}',
@@ -2213,23 +2510,37 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Tabs
                     Row(
                       children: [
-                        Expanded(child: _buildTabItem(_t('Personal Info', 'व्यक्तिगत जानकारी'), 0)),
-                        Expanded(child: _buildTabItem(_t('Emergency', 'आपातकालीन'), 1)),
-                        Expanded(child: _buildTabItem(_t('Health Info', 'स्वास्थ्य जानकारी'), 2)),
-                        Expanded(child: _buildTabItem(_t('Insurance', 'बीमा'), 3)),
+                        Expanded(
+                          child: _buildTabItem(
+                            _t('Personal Info', 'व्यक्तिगत जानकारी'),
+                            0,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildTabItem(_t('Emergency', 'आपातकालीन'), 1),
+                        ),
+                        Expanded(
+                          child: _buildTabItem(
+                            _t('Health Info', 'स्वास्थ्य जानकारी'),
+                            2,
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildTabItem(_t('Insurance', 'बीमा'), 3),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Fields
                     _buildActiveTabContent(),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -2242,7 +2553,7 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   }
 
   Widget _buildTabItem(String title, int index) {
-      final isSelected = _currentProfileTab == index;
+    final isSelected = _currentProfileTab == index;
     return InkWell(
       onTap: () => setState(() => _currentProfileTab = index),
       child: Container(
@@ -2269,40 +2580,66 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
   }
 
   Widget _buildActiveTabContent() {
-      if (_currentProfileTab == 0) {
-          // Personal Info
-          return Column(
-              children: [
-                _buildProfileField(_t('Full Name', 'पूरा नाम'), _profileData!['name'] ?? '', Icons.person_outline),
-                const SizedBox(height: 16),
-                _buildProfileField(_t('Phone Number', 'फ़ोन नंबर'), _profileData!['phone'] ?? '', Icons.phone_outlined),
-                const SizedBox(height: 16),
-                _buildProfileField(_t('Age', 'आयु'), '${_profileData!['age'] ?? ''} ${_t('years', 'वर्ष')}', null),
-                const SizedBox(height: 16),
-                _buildProfileField(_t('Gender', 'लिंग'), _profileData!['gender'] ?? '', null),
-                const SizedBox(height: 16),
-                _buildProfileField(_t('State of Origin', 'मूल राज्य'), _profileData!['state'] ?? '', Icons.location_on_outlined),
-                const SizedBox(height: 16),
-                _buildProfileField(_t('Occupation', 'पेशा'), _profileData!['occupation'] ?? '', Icons.work_outline),
-              ],
-          );
-      } else if (_currentProfileTab == 1) {
-          // Emergency
-          return _buildEmergencyTab();
-      } else if (_currentProfileTab == 2) {
-          // Health Info
-           return _buildHealthInfoTab();
-      } else {
-          // Insurance
-          return _buildInsuranceTab();
-      }
+    if (_currentProfileTab == 0) {
+      // Personal Info
+      return Column(
+        children: [
+          _buildProfileField(
+            _t('Full Name', 'पूरा नाम'),
+            _profileData!['name'] ?? '',
+            Icons.person_outline,
+          ),
+          const SizedBox(height: 16),
+          _buildProfileField(
+            _t('Phone Number', 'फ़ोन नंबर'),
+            _profileData!['phone'] ?? '',
+            Icons.phone_outlined,
+          ),
+          const SizedBox(height: 16),
+          _buildProfileField(
+            _t('Age', 'आयु'),
+            '${_profileData!['age'] ?? ''} ${_t('years', 'वर्ष')}',
+            null,
+          ),
+          const SizedBox(height: 16),
+          _buildProfileField(
+            _t('Gender', 'लिंग'),
+            _profileData!['gender'] ?? '',
+            null,
+          ),
+          const SizedBox(height: 16),
+          _buildProfileField(
+            _t('State of Origin', 'मूल राज्य'),
+            _profileData!['state'] ?? '',
+            Icons.location_on_outlined,
+          ),
+          const SizedBox(height: 16),
+          _buildProfileField(
+            _t('Occupation', 'पेशा'),
+            _profileData!['occupation'] ?? '',
+            Icons.work_outline,
+          ),
+        ],
+      );
+    } else if (_currentProfileTab == 1) {
+      // Emergency
+      return _buildEmergencyTab();
+    } else if (_currentProfileTab == 2) {
+      // Health Info
+      return _buildHealthInfoTab();
+    } else {
+      // Insurance
+      return _buildInsuranceTab();
+    }
   }
 
   bool _isUpdatingHealthInfo = false;
 
   Future<void> _updateHealthInfo(String bloodGroup, String allergies) async {
     setState(() => _isUpdatingHealthInfo = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/api/profile/${widget.healthId}/health'),
@@ -2311,329 +2648,435 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       );
       if (response.statusCode == 200) {
         setState(() {
-            if (_profileData != null) {
-                _profileData!['blood_group'] = bloodGroup;
-                _profileData!['allergies'] = allergies;
-            }
+          if (_profileData != null) {
+            _profileData!['blood_group'] = bloodGroup;
+            _profileData!['allergies'] = allergies;
+          }
         });
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Health info updated')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Health info updated')));
         }
       }
     } catch (e) {
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
-       setState(() => _isUpdatingHealthInfo = false);
+      setState(() => _isUpdatingHealthInfo = false);
     }
   }
 
   void _showHealthInfoDialog({String? currentBlood, String? currentAllergies}) {
-      final TextEditingController bloodController = TextEditingController(text: currentBlood);
-      final TextEditingController allergiesController = TextEditingController(text: currentAllergies);
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-            title: const Text('Update Health Info'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: bloodController,
-                    decoration: const InputDecoration(labelText: 'Blood Group', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                    controller: allergiesController,
-                    decoration: const InputDecoration(labelText: 'Allergies', border: OutlineInputBorder()),
-                ),
-              ],
+    final TextEditingController bloodController = TextEditingController(
+      text: currentBlood,
+    );
+    final TextEditingController allergiesController = TextEditingController(
+      text: currentAllergies,
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Update Health Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: bloodController,
+              decoration: const InputDecoration(
+                labelText: 'Blood Group',
+                border: OutlineInputBorder(),
+              ),
             ),
-            actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                ElevatedButton(
-                    onPressed: () {
-                        _updateHealthInfo(bloodController.text, allergiesController.text);
-                        Navigator.pop(ctx);
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
-                    child: const Text('Save'),
-                ),
-            ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: allergiesController,
+              decoration: const InputDecoration(
+                labelText: 'Allergies',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
         ),
-      );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _updateHealthInfo(bloodController.text, allergiesController.text);
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1F6EBB),
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHealthInfoTab() {
-      final bloodGroup = _profileData!['blood_group'] ?? 'Not added';
-      final allergies = _profileData!['allergies'] ?? 'None reported';
-      
-      return Column(
-          children: [
-             _buildProfileField('Blood Group', bloodGroup, Icons.bloodtype_outlined),
-             const SizedBox(height: 16),
-             _buildProfileField('Allergies', allergies, Icons.medical_services_outlined),
-             const SizedBox(height: 24),
-             OutlinedButton.icon(
-                 onPressed: () => _showHealthInfoDialog(currentBlood: bloodGroup == 'Not added' ? '' : bloodGroup, currentAllergies: allergies == 'None reported' ? '' : allergies),
-                 icon: const Icon(Icons.edit, size: 18),
-                 label: const Text("Edit Health Info"),
-                 style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
-             ),
-          ],
-      );
+    final bloodGroup = _profileData!['blood_group'] ?? 'Not added';
+    final allergies = _profileData!['allergies'] ?? 'None reported';
+
+    return Column(
+      children: [
+        _buildProfileField('Blood Group', bloodGroup, Icons.bloodtype_outlined),
+        const SizedBox(height: 16),
+        _buildProfileField(
+          'Allergies',
+          allergies,
+          Icons.medical_services_outlined,
+        ),
+        const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: () => _showHealthInfoDialog(
+            currentBlood: bloodGroup == 'Not added' ? '' : bloodGroup,
+            currentAllergies: allergies == 'None reported' ? '' : allergies,
+          ),
+          icon: const Icon(Icons.edit, size: 18),
+          label: const Text("Edit Health Info"),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF1F6EBB),
+          ),
+        ),
+      ],
+    );
   }
 
   bool _isUpdatingInsurance = false;
 
-  Future<void> _updateInsuranceInfo(String insuranceId, String policyType) async {
+  Future<void> _updateInsuranceInfo(
+    String insuranceId,
+    String policyType,
+  ) async {
     setState(() => _isUpdatingInsurance = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/api/profile/${widget.healthId}/insurance'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'insurance_id': insuranceId, 'policy_type': policyType}),
+        body: jsonEncode({
+          'insurance_id': insuranceId,
+          'policy_type': policyType,
+        }),
       );
       if (response.statusCode == 200) {
         setState(() {
-            if (_profileData != null) {
-                _profileData!['insurance_id'] = insuranceId;
-                _profileData!['policy_type'] = policyType;
-            }
+          if (_profileData != null) {
+            _profileData!['insurance_id'] = insuranceId;
+            _profileData!['policy_type'] = policyType;
+          }
         });
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Insurance info updated')));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Insurance info updated')),
+          );
       }
     } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-       setState(() => _isUpdatingInsurance = false);
+      setState(() => _isUpdatingInsurance = false);
     }
   }
 
   void _showInsuranceDialog({String? currentId, String? currentPolicy}) {
-      final TextEditingController idController = TextEditingController(text: currentId);
-      String selectedPolicy = ['Basic', 'Premium'].contains(currentPolicy) ? currentPolicy! : 'Basic';
-      
-      showDialog(
-        context: context,
-        builder: (ctx) => StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            title: const Text('Update Insurance Info'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: idController,
-                    decoration: const InputDecoration(labelText: 'Insurance ID', border: OutlineInputBorder()),
+    final TextEditingController idController = TextEditingController(
+      text: currentId,
+    );
+    String selectedPolicy = ['Basic', 'Premium'].contains(currentPolicy)
+        ? currentPolicy!
+        : 'Basic';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: const Text('Update Insurance Info'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: idController,
+                decoration: const InputDecoration(
+                  labelText: 'Insurance ID',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: selectedPolicy,
-                  items: ['Basic', 'Premium'].map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
-                  onChanged: (val) => setStateDialog(() => selectedPolicy = val!),
-                  decoration: const InputDecoration(labelText: 'Policy Type', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedPolicy,
+                items: ['Basic', 'Premium']
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+                onChanged: (val) => setStateDialog(() => selectedPolicy = val!),
+                decoration: const InputDecoration(
+                  labelText: 'Policy Type',
+                  border: OutlineInputBorder(),
                 ),
-              ],
-            ),
-            actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                ElevatedButton(
-                    onPressed: () {
-                        _updateInsuranceInfo(idController.text, selectedPolicy);
-                        Navigator.pop(ctx);
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1F6EBB)),
-                    child: const Text('Save'),
-                ),
+              ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateInsuranceInfo(idController.text, selectedPolicy);
+                Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1F6EBB),
+              ),
+              child: const Text('Save'),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildInsuranceTab() {
-      final insuranceId = _profileData!['insurance_id'] ?? 'Not added';
-      final policyType = _profileData!['policy_type'] ?? 'None';
-      
-      return Column(
-          children: [
-             _buildProfileField('Insurance ID', insuranceId, Icons.credit_card),
-             const SizedBox(height: 16),
-             _buildProfileField('Policy Type', policyType, Icons.verified_user_outlined),
-             const SizedBox(height: 24),
-             if (_isUpdatingInsurance) const CircularProgressIndicator()
-             else OutlinedButton.icon(
-                 onPressed: () => _showInsuranceDialog(currentId: insuranceId == 'Not added' ? '' : insuranceId, currentPolicy: policyType == 'None' ? '' : policyType),
-                 icon: const Icon(Icons.edit, size: 18),
-                 label: const Text("Edit Insurance Info"),
-                 style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
-             ),
-             const SizedBox(height: 32),
-             const Text('My Claims', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-             const SizedBox(height: 16),
-             _isLoadingClaims 
-                ? const CircularProgressIndicator()
-                : _claims.isEmpty 
-                    ? const Text('No claims found', style: TextStyle(color: Colors.grey))
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _claims.length,
-                        itemBuilder: (ctx, i) {
-                          final c = _claims[i];
-                          final statusColor = c['status'] == 'Approved' ? Colors.green : (c['status'] == 'Rejected' ? Colors.red : Colors.orange);
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            color: Colors.grey.shade50,
-                            elevation: 0,
-                            child: ListTile(
-                              title: Text('Dr. ${c['doctor_name']} - ${c['date'].toString().split('T')[0]}'),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Treatment Cost: ₹${c['treatment_cost']}'),
-                                  if (c['reason'] != null) Text('Reason: ${c['reason']}', style: const TextStyle(color: Colors.red)),
-                                  if (c['approved_amount'] != null) Text('Approved: ₹${c['approved_amount']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              trailing: Chip(
-                                label: Text(c['status'], style: const TextStyle(color: Colors.white, fontSize: 12)),
-                                backgroundColor: statusColor,
-                                side: BorderSide.none,
+    final insuranceId = _profileData!['insurance_id'] ?? 'Not added';
+    final policyType = _profileData!['policy_type'] ?? 'None';
+
+    return Column(
+      children: [
+        _buildProfileField('Insurance ID', insuranceId, Icons.credit_card),
+        const SizedBox(height: 16),
+        _buildProfileField(
+          'Policy Type',
+          policyType,
+          Icons.verified_user_outlined,
+        ),
+        const SizedBox(height: 24),
+        if (_isUpdatingInsurance)
+          const CircularProgressIndicator()
+        else
+          OutlinedButton.icon(
+            onPressed: () => _showInsuranceDialog(
+              currentId: insuranceId == 'Not added' ? '' : insuranceId,
+              currentPolicy: policyType == 'None' ? '' : policyType,
+            ),
+            icon: const Icon(Icons.edit, size: 18),
+            label: const Text("Edit Insurance Info"),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF1F6EBB),
+            ),
+          ),
+        const SizedBox(height: 32),
+        const Text(
+          'My Claims',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        _isLoadingClaims
+            ? const CircularProgressIndicator()
+            : _claims.isEmpty
+            ? const Text(
+                'No claims found',
+                style: TextStyle(color: Colors.grey),
+              )
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _claims.length,
+                itemBuilder: (ctx, i) {
+                  final c = _claims[i];
+                  final statusColor = c['status'] == 'Approved'
+                      ? Colors.green
+                      : (c['status'] == 'Rejected'
+                            ? Colors.red
+                            : Colors.orange);
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    color: Colors.grey.shade50,
+                    elevation: 0,
+                    child: ListTile(
+                      title: Text(
+                        'Dr. ${c['doctor_name']} - ${c['date'].toString().split('T')[0]}',
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Treatment Cost: ₹${c['treatment_cost']}'),
+                          if (c['reason'] != null)
+                            Text(
+                              'Reason: ${c['reason']}',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          if (c['approved_amount'] != null)
+                            Text(
+                              'Approved: ₹${c['approved_amount']}',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          );
-                        },
+                        ],
                       ),
-          ],
-      );
+                      trailing: Chip(
+                        label: Text(
+                          c['status'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                        backgroundColor: statusColor,
+                        side: BorderSide.none,
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ],
+    );
   }
 
   Widget _buildEmergencyTab() {
-      final emergencyNo = _profileData!['emergency_no'];
-      
-      if (_isUpdatingEmergency) {
-          return const Center(child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ));
-      }
+    final emergencyNo = _profileData!['emergency_no'];
 
-      if (emergencyNo == null || emergencyNo.toString().isEmpty) {
-          return Column(
-              children: [
-                   Icon(Icons.contact_emergency, size: 60, color: Colors.grey.shade300),
-                   const SizedBox(height: 16),
-                   const Text(
-                       "No emergency contact added",
-                       style: TextStyle(color: Colors.grey, fontSize: 16),
-                   ),
-                   const SizedBox(height: 24),
-                   ElevatedButton.icon(
-                       onPressed: () => _showEmergencyDialog(),
-                       icon: const Icon(Icons.add),
-                       label: const Text("Add Emergency Number"),
-                       style: ElevatedButton.styleFrom(
-                           backgroundColor: const Color(0xFF1F6EBB),
-                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                       ),
-                   ),
-              ],
-          );
-      }
-      
-      return Column(
-          children: [
-               Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.shade100),
-                  ),
-                  child: Row(
-                      children: [
-                          Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.phone_in_talk, color: Colors.red),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                      const Text(
-                                          "Emergency Contact",
-                                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                          emergencyNo,
-                                          style: const TextStyle(
-                                              fontSize: 18, 
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                          ),
-                                      ),
-                                  ],
-                              ),
-                          ),
-                      ],
-                  ),
-               ),
-               const SizedBox(height: 24),
-               Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                       OutlinedButton.icon(
-                           onPressed: () => _showEmergencyDialog(currentNumber: emergencyNo),
-                           icon: const Icon(Icons.edit, size: 18),
-                           label: const Text("Edit"),
-                           style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF1F6EBB)),
-                       ),
-                       const SizedBox(width: 16),
-                       OutlinedButton.icon(
-                           onPressed: () {
-                               showDialog(
-                                   context: context, 
-                                   builder: (ctx) => AlertDialog(
-                                       title: const Text("Remove Number?"),
-                                       content: const Text("Are you sure you want to remove this emergency contact?"),
-                                       actions: [
-                                           TextButton(
-                                               onPressed: () => Navigator.pop(ctx), 
-                                               child: const Text("Cancel"),
-                                           ),
-                                           TextButton(
-                                               onPressed: () {
-                                                   Navigator.pop(ctx);
-                                                   _updateEmergencyNumber(null);
-                                               }, 
-                                               child: const Text("Remove", style: TextStyle(color: Colors.red)),
-                                           ),
-                                       ],
-                                   ),
-                               );
-                           },
-                           icon: const Icon(Icons.delete_outline, size: 18),
-                           label: const Text("Remove"),
-                           style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                       ),
-                   ],
-               ),
-          ],
+    if (_isUpdatingEmergency) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: CircularProgressIndicator(),
+        ),
       );
+    }
+
+    if (emergencyNo == null || emergencyNo.toString().isEmpty) {
+      return Column(
+        children: [
+          Icon(Icons.contact_emergency, size: 60, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          const Text(
+            "No emergency contact added",
+            style: TextStyle(color: Colors.grey, fontSize: 16),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _showEmergencyDialog(),
+            icon: const Icon(Icons.add),
+            label: const Text("Add Emergency Number"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1F6EBB),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.red.shade100),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.phone_in_talk, color: Colors.red),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Emergency Contact",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      emergencyNo,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => _showEmergencyDialog(currentNumber: emergencyNo),
+              icon: const Icon(Icons.edit, size: 18),
+              label: const Text("Edit"),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1F6EBB),
+              ),
+            ),
+            const SizedBox(width: 16),
+            OutlinedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("Remove Number?"),
+                    content: const Text(
+                      "Are you sure you want to remove this emergency contact?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _updateEmergencyNumber(null);
+                        },
+                        child: const Text(
+                          "Remove",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: const Text("Remove"),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildProfileField(String label, String value, IconData? icon) {
@@ -2641,12 +3084,9 @@ class _MigrantWorkerDashboardState extends State<MigrantWorkerDashboard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 14,
-            ),
-          ),
+          label,
+          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+        ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -2683,8 +3123,8 @@ class BookAppointmentScreen extends StatefulWidget {
   final String name;
 
   const BookAppointmentScreen({
-    super.key, 
-    required this.healthId, 
+    super.key,
+    required this.healthId,
     required this.name,
   });
 
@@ -2697,25 +3137,29 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _visitTypeController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
+
   String? _selectedTime;
   String? _selectedHospital;
   String? _selectedDoctor;
-  
+
   List<String> _hospitals = [];
   bool _isLoadingHospitals = false;
-  
+
   List<String> _doctors = [];
   bool _isLoadingDoctors = false;
-  
+
   List<String> _bookedSlots = [];
   bool _isLoadingSlots = false;
-  
+
   bool _isSubmitting = false;
 
   final List<String> _timeSlots = [
-    '9:00 AM', '10:00 AM', '11:00 AM',
-    '2:00 PM', '3:00 PM', '4:00 PM',
+    '9:00 AM',
+    '10:00 AM',
+    '11:00 AM',
+    '2:00 PM',
+    '3:00 PM',
+    '4:00 PM',
   ];
 
   @override
@@ -2726,7 +3170,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
   Future<void> _fetchHospitals() async {
     setState(() => _isLoadingHospitals = true);
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/hospitals'));
       if (response.statusCode == 200) {
@@ -2750,9 +3196,13 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       _selectedTime = null;
       _bookedSlots = [];
     });
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/doctors?hospitalName=$hospital'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/doctors?hospitalName=$hospital'),
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
@@ -2768,15 +3218,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
   Future<void> _fetchBookedSlots() async {
     if (_selectedDoctor == null || _dateController.text.isEmpty) return;
-    
+
     setState(() {
       _isLoadingSlots = true;
       _bookedSlots = [];
       _selectedTime = null;
     });
-    final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : 'http://10.0.2.2:3000';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/booked-slots?doctorName=${Uri.encodeComponent(_selectedDoctor!)}&date=${_dateController.text}'));
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/api/booked-slots?doctorName=${Uri.encodeComponent(_selectedDoctor!)}&date=${_dateController.text}',
+        ),
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
@@ -2799,7 +3255,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        _dateController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
       _fetchBookedSlots();
     }
@@ -2808,8 +3265,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   Future<void> _bookAppointment() async {
     if (_formKey.currentState!.validate() && _selectedTime != null) {
       setState(() => _isSubmitting = true);
-      
-      final String baseUrl = kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+
+      final String baseUrl = kIsWeb
+          ? 'http://localhost:3000'
+          : 'http://10.0.2.2:3000';
       try {
         final response = await http.post(
           Uri.parse('$baseUrl/api/book-appointment'),
@@ -2820,7 +3279,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             'date': _dateController.text,
             'time': _selectedTime,
             'facility': _selectedHospital ?? 'Unknown Facility',
-            'visitType': _visitTypeController.text.isEmpty ? 'General Checkup' : _visitTypeController.text,
+            'visitType': _visitTypeController.text.isEmpty
+                ? 'General Checkup'
+                : _visitTypeController.text,
             'notes': _notesController.text,
           }),
         );
@@ -2833,7 +3294,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             Navigator.pop(context, true);
           }
         } else {
-           throw Exception('Failed to book');
+          throw Exception('Failed to book');
         }
       } catch (e) {
         if (mounted) {
@@ -2845,7 +3306,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         setState(() => _isSubmitting = false);
       }
     } else if (_selectedTime == null) {
-       ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a time slot')),
       );
     }
@@ -2884,7 +3345,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 validator: (val) => val!.isEmpty ? 'Select a date' : null,
               ),
               const SizedBox(height: 20),
-              
+
               _buildLabel('Select Time'),
               const SizedBox(height: 8),
               if (_isLoadingSlots)
@@ -2892,7 +3353,13 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               else if (_selectedDoctor == null || _dateController.text.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Select Date and Doctor to view available times', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                  child: Text(
+                    'Select Date and Doctor to view available times',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 )
               else
                 Wrap(
@@ -2904,15 +3371,29 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     return ChoiceChip(
                       label: Text(time),
                       selected: isSelected && !isBooked,
-                      onSelected: isBooked ? null : (selected) {
-                        setState(() => _selectedTime = selected ? time : null);
-                      },
+                      onSelected: isBooked
+                          ? null
+                          : (selected) {
+                              setState(
+                                () => _selectedTime = selected ? time : null,
+                              );
+                            },
                       selectedColor: Colors.blue.withOpacity(0.1),
-                      backgroundColor: isBooked ? Colors.red.shade50 : Colors.white,
-                      side: BorderSide(color: isBooked ? Colors.red.shade300 : (isSelected ? Colors.blue : Colors.grey.shade300)),
+                      backgroundColor: isBooked
+                          ? Colors.red.shade50
+                          : Colors.white,
+                      side: BorderSide(
+                        color: isBooked
+                            ? Colors.red.shade300
+                            : (isSelected ? Colors.blue : Colors.grey.shade300),
+                      ),
                       labelStyle: TextStyle(
-                        color: isBooked ? Colors.red.shade700 : (isSelected ? Colors.blue : Colors.black),
-                        fontWeight: isSelected && !isBooked ? FontWeight.bold : FontWeight.normal,
+                        color: isBooked
+                            ? Colors.red.shade700
+                            : (isSelected ? Colors.blue : Colors.black),
+                        fontWeight: isSelected && !isBooked
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     );
                   }).toList(),
@@ -2926,35 +3407,40 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               else
                 DropdownButtonFormField<String>(
                   value: _selectedHospital,
-                  items: _hospitals.map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+                  items: _hospitals
+                      .map((h) => DropdownMenuItem(value: h, child: Text(h)))
+                      .toList(),
                   onChanged: (val) {
                     setState(() => _selectedHospital = val);
                     if (val != null) _fetchDoctors(val);
                   },
                   decoration: _inputDecoration('Choose a hospital'),
-                  validator: (val) => val == null ? 'Please select a hospital' : null,
+                  validator: (val) =>
+                      val == null ? 'Please select a hospital' : null,
                 ),
 
-               const SizedBox(height: 20),
-               if (_selectedHospital != null) ...[
-                 _buildLabel('Select Doctor'),
-                 const SizedBox(height: 8),
-                 if (_isLoadingDoctors)
-                   const Center(child: CircularProgressIndicator())
-                 else
-                   DropdownButtonFormField<String>(
-                     value: _selectedDoctor,
-                     items: _doctors.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                     onChanged: (val) {
-                       setState(() => _selectedDoctor = val);
-                       _fetchBookedSlots();
-                     },
-                     decoration: _inputDecoration('Choose a doctor'),
-                     validator: (val) => val == null ? 'Please select a doctor' : null,
-                   ),
-                 const SizedBox(height: 20),
-               ],
-
+              const SizedBox(height: 20),
+              if (_selectedHospital != null) ...[
+                _buildLabel('Select Doctor'),
+                const SizedBox(height: 8),
+                if (_isLoadingDoctors)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  DropdownButtonFormField<String>(
+                    value: _selectedDoctor,
+                    items: _doctors
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        .toList(),
+                    onChanged: (val) {
+                      setState(() => _selectedDoctor = val);
+                      _fetchBookedSlots();
+                    },
+                    decoration: _inputDecoration('Choose a doctor'),
+                    validator: (val) =>
+                        val == null ? 'Please select a doctor' : null,
+                  ),
+                const SizedBox(height: 20),
+              ],
 
               const SizedBox(height: 20),
 
@@ -2971,7 +3457,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               TextFormField(
                 controller: _notesController,
                 maxLines: 4,
-                decoration: _inputDecoration('Any specific concerns or symptoms...'),
+                decoration: _inputDecoration(
+                  'Any specific concerns or symptoms...',
+                ),
               ),
               const SizedBox(height: 30),
 
@@ -2982,11 +3470,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   onPressed: _isSubmitting ? null : _bookAppointment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1F6EBB),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: _isSubmitting 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Confirm Appointment', style: TextStyle(fontSize: 16)),
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Confirm Appointment',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
             ],
@@ -2997,7 +3490,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   }
 
   Widget _buildLabel(String text) {
-    return Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+    );
   }
 
   InputDecoration _inputDecoration(String hint) {
